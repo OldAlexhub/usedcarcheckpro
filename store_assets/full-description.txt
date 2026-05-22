@@ -1,0 +1,65 @@
+Buying a used car is one of the largest purchases most people make, and it is easy to overlook important details during an in-person inspection. Used Car Check Pro gives you a structured, comprehensive checklist to work through at your own pace, so you never leave the lot wondering what you forgot to check.
+
+GUIDED INSPECTION CHECKLIST
+
+The app walks you through a section-by-section checklist covering every major area of a used vehicle. Each item includes a plain-language description explaining what to look for and why it matters. You do not need to be a mechanic - just follow the prompts and record what you observe.
+
+INSPECTION SECTIONS COVERED
+
+Documents and Seller: Title, ownership, service records, history reports, lien status, odometer consistency, and sale terms.
+
+Exterior and Body: Paint consistency across all panels, panel gaps, rust, glass condition, all exterior lights, mirrors, bumpers, and door seals.
+
+Tires and Wheels: Tread depth on all four tires, wear patterns, sidewall condition, wheel condition, spare tire, and tire age.
+
+Interior and Controls: Seats, seatbelts, airbag warning light, dashboard warning lights, climate control, infotainment, power windows, door locks, horn, wipers, and interior odor.
+
+Startup and Idle: Cold start behavior, idle quality, check engine light, ABS light, traction control light, oil pressure, exhaust color, and unusual odors.
+
+Engine - Gasoline and Hybrid: Oil level and condition, coolant, power steering fluid, brake fluid, transmission fluid, air filter, leaks, accessory belts, battery terminals, and radiator hoses.
+
+Engine - Diesel: Oil, coolant, DPF service history, EGR service, turbocharger, fuel filter, glow plugs, injectors, DEF fluid, and exhaust smoke color.
+
+Hybrid System: High-voltage warning lights, battery age and history, regenerative braking, EV mode behavior, and PHEV charging equipment.
+
+Electric Vehicle System: High-voltage warnings, estimated range, charging port condition, DC fast charge port, onboard charger, charging equipment, and battery service history.
+
+Test Drive: Acceleration, transmission shifts, steering feel, straight tracking, braking, noise over bumps, vibration at speed, cruise control, and HVAC effectiveness.
+
+Post-Drive Review: Engine bay revisit after the drive, exhaust pipe inspection, fresh fluid drips, brake odor, and overall driving impression.
+
+POWERTRAIN-SPECIFIC CHECKLISTS
+
+Select Gasoline, Diesel, Hybrid, or Electric when starting an inspection. The app automatically shows only the sections relevant to that powertrain type. No irrelevant sections clutter your workflow.
+
+ITEM STATUS OPTIONS
+
+Mark each item as Good, Concern, Critical Attention, Not Checked, or Not Applicable. Add written notes to any item to record exactly what you observed.
+
+DECISION STATUS TRACKING
+
+Track each vehicle with six decision options: Still Reviewing, Ask a Mechanic, Request More Info, Considering, Pass, or Purchased.
+
+COMPARE UP TO 3 VEHICLES
+
+Select up to three saved inspections and view a side-by-side comparison of status counts, asking price, odometer, and key details. Export the comparison as a PDF.
+
+PDF REPORTS
+
+Export a full PDF inspection report for any vehicle, including all details, every checklist item and its status, your notes, and your decision. Share via email, messaging, or any Android share target. Everything generated on your device - no upload required.
+
+WORKS COMPLETELY OFFLINE
+
+All core features work with no internet connection. The only feature requiring internet is the display of ads.
+
+FREE WITH ADS
+
+Free to download and use, supported by Google AdMob banner and interstitial ads. Ads do not appear during active inspections or on checklist screens.
+
+NO ACCOUNT REQUIRED
+
+No sign-in, no registration, no cloud sync, and no subscription. Open the app and start inspecting.
+
+DISCLAIMER
+
+Used Car Check Pro is an observation and organization tool. It does not replace a professional pre-purchase mechanical inspection, a vehicle history report, a recall check, or a title search. It does not certify any vehicle as safe or roadworthy and does not recommend whether to purchase any specific vehicle. Always consult a qualified mechanic and review all relevant records before making a purchase decision.

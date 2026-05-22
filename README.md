@@ -1,97 +1,276 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Used Car Check Pro: Buyer Guide
 
-# Getting Started
+**Inspect smarter before you buy.**
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+Used Car Check Pro is a free Android app that guides used-car buyers through a comprehensive, section-by-section inspection checklist. Record your findings, compare vehicles side by side, and export professional PDF reports - all offline and at no cost.
 
-## Step 1: Start Metro
+- Package: com.oldalexhub.usedcarcheckpro
+- Developer: Old Alex Hub
+- Platform: Android
+- Category: Auto and Vehicles
+- Monetization: Free with Google AdMob ads
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+---
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## What the App Does
+
+- **Guided inspection checklist** with 8 to 10 sections depending on powertrain type
+- **Powertrain-specific sections** for Gasoline, Diesel, Hybrid, and Electric vehicles
+- **Vehicle details entry**: year, make, model, trim, odometer, asking price, VIN, seller info, inspection date, and notes
+- **Five item statuses** per checklist item: Good, Concern, Critical Attention, Not Checked, Not Applicable
+- **Written notes** on any checklist item
+- **Decision status tracking** with 6 options: Still Reviewing, Ask a Mechanic, Request More Info, Considering, Pass, Purchased
+- **Save unlimited inspection records** locally on-device
+- **Compare up to 3 vehicles** side by side with a summary of status counts and key details
+- **Export PDF inspection reports** - full report per vehicle, generated on-device
+- **Export PDF comparison reports** - side-by-side comparison PDF
+- **Export JSON backup** of any inspection record
+- **Android share integration** - share PDFs via email, messaging, or any share target
+- **Works completely offline** - all core features require no internet connection
+- **Free with Google AdMob ads** - banner ads on Home, Saved, and Compare screens; interstitial ad after completing a new inspection (max once per session and once per 24 hours)
+- **No account required** - no sign-in, no registration, no cloud sync
+
+### Inspection Sections
+
+| Section | Powertrain |
+|---|---|
+| Documents and Seller | All |
+| Exterior and Body | All |
+| Tires and Wheels | All |
+| Interior and Controls | All |
+| Startup and Idle | All |
+| Engine - Gasoline and Hybrid ICE | Gasoline, Hybrid |
+| Engine - Diesel | Diesel |
+| Hybrid System | Hybrid |
+| Electric System | Electric |
+| Test Drive | All |
+| Post-Drive Review | All |
+
+---
+
+## What the App Does NOT Do
+
+- Does not replace a professional mechanical inspection
+- Does not replace a vehicle history report (CARFAX, AutoCheck, etc.)
+- Does not replace a title check or recall check
+- Does not certify any vehicle as safe or roadworthy
+- Does not confirm the absence of hidden defects
+- Does not determine market value or recommend purchase
+- Does not calculate safety scores, reliability scores, or deal scores
+- Does not decode VINs or look up recall data
+- Does not use the camera or take photos
+- Does not connect to any backend, cloud, or external data source
+
+Always consult a qualified mechanic and review all relevant records before making a purchase decision.
+
+---
+
+## Tech Stack
+
+| Component | Version |
+|---|---|
+| React Native | 0.85.3 |
+| React | 19.2.3 |
+| TypeScript | 5.8.x |
+| React Navigation (Stack + Bottom Tabs) | 7.x |
+| AsyncStorage | 2.x |
+| react-native-google-mobile-ads | 14.7.x |
+| react-native-html-to-pdf | 0.12.x |
+| react-native-fs | 2.20.x |
+| react-native-share | 10.x |
+| react-native-vector-icons | 10.x |
+| react-native-gesture-handler | 2.x |
+| react-native-screens | 4.x |
+| react-native-safe-area-context | 5.x |
+
+---
+
+## Project Structure
+
+```
+usedcarcheckpro/
+  android/               - Android native project
+  src/
+    components/          - Reusable UI components
+      BannerAdWrapper    - AdMob banner ad component
+      ChecklistItemRow   - Checklist item with status picker
+      ConfirmDialog      - Confirmation modal
+      EmptyState         - Empty list placeholder
+      ProgressBar        - Section progress indicator
+      StatusBadge        - Color-coded status pill
+      VehicleCard        - Saved inspection summary card
+    config/
+      admob.ts           - AdMob ad unit IDs and frequency logic
+      constants.ts       - App-wide constants
+      theme.ts           - Colors, typography, spacing
+    data/
+      checklist.ts       - Full checklist template with all sections and items
+    navigation/
+      AppNavigator.tsx   - Stack + bottom tab navigation setup
+    screens/
+      ChecklistScreen    - Section-by-section checklist UI
+      CompareResultScreen - Side-by-side comparison results
+      CompareSelectScreen - Select inspections to compare
+      HomeScreen         - Main dashboard
+      InspectionSummaryScreen - Post-checklist summary and save
+      OnboardingScreen   - First-time launch welcome screen
+      PrivacyPolicyScreen - In-app privacy policy
+      SavedInspectionsScreen - Saved inspection list
+      SettingsScreen     - App settings and data management
+      VehicleDetailsScreen - New inspection vehicle details form
+    storage/
+      storage.ts         - AsyncStorage read/write operations
+    types/
+      index.ts           - All TypeScript interfaces and type definitions
+    utils/
+      dateUtils.ts       - Date formatting helpers
+      inspectionUtils.ts - Status counting and inspection helpers
+      pdfExport.ts       - HTML-to-PDF generation for reports
+      shareUtils.ts      - Android share and file export helpers
+  store_assets/          - Play Store listing copy, notes, and documentation
+  App.tsx                - App entry point
+  app-ads.txt            - AdMob authorized sellers file (host at developer website root)
+  PRIVACYPOLICY.md       - Full privacy policy
+```
+
+---
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js 22.11.0 or higher
+- Android Studio with Android SDK
+- Java 17 or higher
+- React Native development environment configured per the [official setup guide](https://reactnative.dev/docs/set-up-your-environment)
+
+### Install Dependencies
 
 ```sh
-# Using npm
+npm install
+```
+
+### Run in Development Mode
+
+Start the Metro bundler:
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+In a separate terminal, build and run on a connected Android device or emulator:
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
+Debug builds automatically use Google's test ad unit IDs. You will see test ads, not live ads.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+---
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## Building a Release APK or AAB
+
+### Using release.py (if present)
+
+If a `release.py` script is included in the project root, run it from the project root:
 
 ```sh
-bundle install
+python release.py
 ```
 
-Then, and every time you update your native dependencies, run:
+Follow the prompts to build a signed release AAB or APK.
+
+### Manual Gradle Build
+
+Navigate to the Android directory and build:
 
 ```sh
-bundle exec pod install
+cd android
+./gradlew bundleRelease
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+The output AAB will be at:
+
+```
+android/app/build/outputs/bundle/release/app-release.aab
+```
+
+To build a release APK instead:
 
 ```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+cd android
+./gradlew assembleRelease
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+Output APK:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```
+android/app/build/outputs/apk/release/app-release.apk
+```
 
-## Step 3: Modify your app
+### Signing Configuration
 
-Now that you have successfully run the app, let's make changes!
+Release signing is configured in `android/app/build.gradle` under `signingConfigs`. Ensure your keystore file and credentials are set up before building for release. Never commit keystore files or passwords to source control.
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+---
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## AdMob Configuration
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+| Item | Value |
+|---|---|
+| AdMob Publisher ID | pub-7831002909037560 |
+| AdMob App ID | ca-app-pub-7831002909037560~9160533701 |
+| Banner Ad Unit ID | ca-app-pub-7831002909037560/1263382299 |
+| Interstitial Ad Unit ID | ca-app-pub-7831002909037560/2251967276 |
 
-## Congratulations! :tada:
+Ad unit IDs are managed in `src/config/admob.ts`. Test IDs are used automatically in debug builds (`__DEV__ === true`). Production IDs are used automatically in release builds.
 
-You've successfully run and modified your React Native App. :partying_face:
+See `store_assets/admob-setup-notes.md` for full setup and verification instructions.
 
-### Now what?
+---
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## Privacy
 
-# Troubleshooting
+- All inspection data is stored locally on-device using AsyncStorage
+- No personal data is collected or transmitted by the developer
+- The only internet activity is Google AdMob ad requests
+- Only the INTERNET permission is declared in AndroidManifest.xml
+- See `PRIVACYPOLICY.md` for the complete privacy policy
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+---
 
-# Learn More
+## Store Assets
 
-To learn more about React Native, take a look at the following resources:
+All Play Store listing copy, notes, and documentation are in the `store_assets/` directory:
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+| File | Contents |
+|---|---|
+| store-listing.md | All Play Store fields organized as a document |
+| short-description.txt | 80-character short description |
+| full-description.txt | Plain text full store description |
+| promo-text.txt | 170-character promotional text |
+| release-notes.txt | Version 1.0.0 release notes |
+| screenshot-captions.txt | 8 screenshot captions |
+| data-safety-notes.md | Data Safety form answers for Play Console |
+| privacy-summary.txt | Brief privacy summary |
+| feature-graphic-notes.md | Instructions for creating the 1024x500 feature graphic |
+| app-ads-txt-notes.md | app-ads.txt hosting and configuration guide |
+| admob-setup-notes.md | AdMob console setup and verification guide |
+| play-console-checklist.md | Complete submission checklist for Play Console |
+| permissions-notes.md | Permission justifications for Play Console |
+| ad-placement-notes.md | Where ads appear and where they do not |
+| disclaimer-notes.md | Full app disclaimer text |
+
+---
+
+## License
+
+MIT License
+
+Copyright (c) 2025 Old Alex Hub
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
