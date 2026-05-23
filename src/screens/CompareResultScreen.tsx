@@ -24,6 +24,7 @@ import {
 import { formatDate } from '../utils/dateUtils';
 import { generateComparisonPDF } from '../utils/pdfExport';
 import { shareFile } from '../utils/shareUtils';
+import BannerAdWrapper from '../components/BannerAdWrapper';
 
 type Props = StackScreenProps<RootStackParamList, 'CompareResult'>;
 
@@ -359,6 +360,7 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
         not evaluate vehicle condition or recommend a purchase.
       </Text>
     </ScrollView>
+    <BannerAdWrapper />
     </SafeAreaView>
   );
 }

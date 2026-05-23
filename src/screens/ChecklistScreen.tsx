@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList, Inspection, ChecklistItemData } from '../types';
 import { StorageService } from '../storage/storage';
+import { tryShowInterstitial } from '../config/admob';
 import ProgressBar from '../components/ProgressBar';
 import ChecklistItemRow from '../components/ChecklistItemRow';
 
@@ -85,7 +86,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
     }
   }, [navigation, inspectionId, sectionIndex, totalSections]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (sectionIndex < totalSections - 1) {
       navigation.navigate('Checklist', {
         inspectionId,
@@ -93,6 +94,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
         totalSections,
       });
     } else {
+      await tryShowInterstitial();
       navigation.navigate('InspectionSummary', {
         inspectionId,
         isNew: true,

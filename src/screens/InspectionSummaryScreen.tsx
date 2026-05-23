@@ -11,11 +11,9 @@ import {
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import {
   RootStackParamList,
   Inspection,
-  AppSettings,
   DecisionStatus,
   ChecklistItemData,
 } from '../types';
@@ -33,7 +31,7 @@ import { formatDate } from '../utils/dateUtils';
 import { generateInspectionPDF } from '../utils/pdfExport';
 import { shareFile } from '../utils/shareUtils';
 import { exportInspectionJSON } from '../utils/jsonExport';
-import { canShowInterstitial, updateInterstitialShown, ADMOB_INTERSTITIAL_ID } from '../config/admob';
+import { tryShowInterstitial } from '../config/admob';
 import ProgressBar from '../components/ProgressBar';
 import StatusBadge from '../components/StatusBadge';
 
@@ -104,7 +102,6 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
   const { inspectionId, isNew } = route.params;
 
   const [inspection, setInspection] = useState<Inspection | null>(null);
-  const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [decisionModalVisible, setDecisionModalVisible] = useState(false);
@@ -114,17 +111,13 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      StorageService.getInspection(inspectionId),
-      StorageService.getSettings(),
-    ]).then(([insp, s]) => {
+    StorageService.getInspection(inspectionId).then((insp) => {
       if (cancelled) return;
       if (!insp) {
         setNotFound(true);
       } else {
         setInspection(insp);
       }
-      setSettings(s);
       setLoading(false);
     });
     return () => {
@@ -153,6 +146,7 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
     try {
       const filePath = await generateInspectionPDF(inspection);
       await shareFile(filePath, `${inspection.vehicle.nickname || 'Inspection'} - Report`);
+      await tryShowInterstitial();
     } catch {
       Alert.alert('Export Failed', 'Could not generate the PDF report. Please try again.');
     } finally {
@@ -176,29 +170,9 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
   const handleReturnHome = useCallback(async () => {
     if (returningHome) return;
     setReturningHome(true);
-    if (isNew && settings && canShowInterstitial(settings)) {
-      try {
-        const interstitial = InterstitialAd.createForAdRequest(ADMOB_INTERSTITIAL_ID);
-        await new Promise<void>((resolve) => {
-          const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
-            unsubscribeLoaded();
-            interstitial.show();
-            resolve();
-          });
-          const unsubscribeError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
-            unsubscribeError();
-            resolve();
-          });
-          interstitial.load();
-        });
-        const updatedSettings = updateInterstitialShown(settings);
-        await StorageService.saveSettings(updatedSettings);
-      } catch {
-        // Ad failed silently
-      }
-    }
+    await tryShowInterstitial();
     navigation.navigate('MainTabs');
-  }, [isNew, settings, navigation, returningHome]);
+  }, [navigation, returningHome]);
 
   const handleSectionTap = useCallback(
     (sectionIdx: number) => {

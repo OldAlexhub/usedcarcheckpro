@@ -1,6 +1,6 @@
 # Privacy Policy - Used Car Check Pro
 
-**Last updated: January 2025**
+**Last updated: May 2026**
 
 ## 1. Overview
 
@@ -18,8 +18,12 @@ All inspection records you create, including vehicle details, checklist response
 
 The app is free and supported by advertising. Google AdMob displays ads on selected screens:
 
-- Banner ads appear on the Home screen, Saved Inspections screen, and Compare selection screen.
-- An interstitial ad may appear after a user completes and saves a new inspection (maximum once per app session and once per rolling 24-hour period).
+- **Banner ads** appear persistently on the Home screen, Saved Inspections screen, Compare Vehicle Selection screen, and Compare Result screen.
+- **Interstitial ads** (full-screen ads) may appear at natural break points:
+  - After saving a new vehicle inspection
+  - After pressing Finish at the end of the inspection checklist
+  - After exporting a PDF report
+  - Interstitial ads are subject to a one-hour cooldown — no more than one interstitial will be shown per hour.
 
 AdMob may show personalized ads based on your Google account settings and device data. You can manage ad personalization in your Google account settings at myaccount.google.com.
 
