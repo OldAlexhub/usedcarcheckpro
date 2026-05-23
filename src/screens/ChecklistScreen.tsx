@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList, Inspection, ChecklistItemData } from '../types';
 import { StorageService } from '../storage/storage';
@@ -102,7 +102,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text style={styles.loadingText}>Loading checklist...</Text>
@@ -113,7 +113,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
 
   if (notFound || !inspection) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.centered}>
           <Text style={styles.errorTitle}>Inspection Not Found</Text>
           <Text style={styles.errorMessage}>
@@ -135,7 +135,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
 
   if (!section) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.centered}>
           <Text style={styles.errorTitle}>Section Not Found</Text>
           <TouchableOpacity
@@ -177,7 +177,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
   const ListFooter = <View style={styles.listFooter} />;
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <FlatList
         data={section.items}
         keyExtractor={(item) => item.id}

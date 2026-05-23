@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Modal,
 } from 'react-native';
@@ -16,6 +15,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import { StackScreenProps } from '@react-navigation/stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList, VehicleDetails, PowertrainType, SellerType } from '../types';
 import { StorageService } from '../storage/storage';
 import { createNewInspection } from '../utils/inspectionUtils';
@@ -244,7 +244,7 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#3B82F6" />
         </View>
@@ -253,7 +253,7 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
   }
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

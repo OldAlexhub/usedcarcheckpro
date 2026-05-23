@@ -4,8 +4,8 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 
@@ -51,7 +51,7 @@ const bodyStyles = StyleSheet.create({
 
 function PrivacyPolicyScreen(_props: Props): React.JSX.Element {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Privacy Policy</Text>
         <Text style={styles.lastUpdated}>Last updated: January 2025</Text>

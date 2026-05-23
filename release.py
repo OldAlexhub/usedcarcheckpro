@@ -439,8 +439,9 @@ def generate_keystore(java_home: Path = None):
     """Auto-generate a release keystore with a random secure password. No prompts."""
     print(bold("\nGenerating release keystore automatically..."))
 
+    # PKCS12 requires storepass == keypass; use one password for both.
     store_pass = _random_password(28)
-    key_pass = _random_password(28)
+    key_pass = store_pass
 
     dname = "CN=Old Alex Hub, OU=Old Alex Hub, O=Old Alex Hub, L=Unknown, S=Unknown, C=US"
 
@@ -699,11 +700,13 @@ def run_all_validations() -> dict:
 
 def _run_gradle(cmd_args: list, env: dict, cwd: Path):
     """Run a Gradle command, stream output, and raise on failure."""
-    gradlew_cmd = [gradlew()] + cmd_args
     if IS_WINDOWS:
-        # On Windows, must be invoked via cmd /c so batch file is found
-        full_cmd = ["cmd", "/c"] + gradlew_cmd
+        # Use the full path to gradlew.bat so cmd /c can find it regardless of cwd lookup rules
+        gradlew_full = str(cwd / "gradlew.bat")
+        full_cmd = ["cmd", "/c", gradlew_full] + cmd_args
+        gradlew_cmd = ["gradlew.bat"] + cmd_args  # display only
     else:
+        gradlew_cmd = [gradlew()] + cmd_args
         full_cmd = gradlew_cmd
 
     print(f"  Running: {' '.join(gradlew_cmd)}")

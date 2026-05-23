@@ -1,4 +1,7 @@
 {
   "name": "UsedCarCheckPro",
-  "displayName": "Used Car Check Pro"
+  "displayName": "Used Car Check Pro",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-7831002909037560~9160533701"
+  }
 }

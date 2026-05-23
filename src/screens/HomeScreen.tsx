@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -45,7 +46,7 @@ function HomeScreen({ navigation }: Props): React.JSX.Element {
   const hasMore = inspections.length > 3;
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root} edges={['top']}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -108,7 +109,7 @@ function HomeScreen({ navigation }: Props): React.JSX.Element {
       </ScrollView>
 
       <BannerAdWrapper />
-    </View>
+    </SafeAreaView>
   );
 }
 

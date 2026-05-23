@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  SafeAreaView,
   Modal,
   Alert,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import {
   RootStackParamList,
@@ -214,7 +214,7 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text style={styles.loadingText}>Loading summary...</Text>
@@ -225,7 +225,7 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
 
   if (notFound || !inspection) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.centered}>
           <Text style={styles.errorTitle}>Inspection Not Found</Text>
           <Text style={styles.errorMessage}>
@@ -266,7 +266,7 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
     .join(' ');
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={styles.root} edges={['bottom']}>
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.scrollContent}

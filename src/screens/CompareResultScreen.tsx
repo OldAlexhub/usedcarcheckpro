@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { RootStackParamList, Inspection, DecisionStatus } from '../types';
 import { StorageService } from '../storage/storage';
@@ -287,6 +288,7 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
   ];
 
   return (
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={styles.scrollContent}
@@ -357,13 +359,17 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
         not evaluate vehicle condition or recommend a purchase.
       </Text>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#1A1D21',
+  },
+  scroll: {
+    flex: 1,
   },
   scrollContent: {
     paddingBottom: 32,
