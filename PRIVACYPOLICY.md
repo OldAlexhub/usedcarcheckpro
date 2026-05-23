@@ -70,7 +70,7 @@ We may update this policy from time to time. Continued use of the app after chan
 
 For questions about this privacy policy, contact:
 
-Email: mohamedgad.gm@gmail.com
+Email: info@oldalexhub.com
 Developer: Old Alex Hub
 
 ---
