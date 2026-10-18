@@ -68,7 +68,9 @@ intentionally supplied only through the untracked Nexus `.env` file.
 
 `MAX_UPLOAD_BYTES` is reserved by Nexus and may contain a storage path. The
 server deliberately ignores it. To change the API image-upload limit from the
-10 MiB default, set `PROVEH_MAX_UPLOAD_BYTES` to an integer number of bytes.
+10 MiB default, set `PROVEH_MAX_UPLOAD_BYTES` to a positive integer number of
+bytes. If Nexus injects its storage path into that variable too, the server
+safely uses the 10 MiB default instead of failing startup.
 
 If Nexus already provides PostgreSQL, run only the API service and supply a
 `postgresql+asyncpg://...` `DATABASE_URL`. Do not commit `.env`.

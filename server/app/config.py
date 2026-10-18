@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,6 +31,17 @@ class Settings(BaseSettings):
         "development-only-change-this-session-secret"
     )
     admin_session_hours: int = 12
+
+    @field_validator("max_upload_bytes", mode="before")
+    @classmethod
+    def use_safe_upload_default_for_non_numeric_values(cls, value: object) -> object:
+        """Do not let a Nexus storage-path injection block server startup."""
+        if value is None:
+            return 10 * 1024 * 1024
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return 10 * 1024 * 1024
 
     @property
     def cors_origin_list(self) -> list[str]:

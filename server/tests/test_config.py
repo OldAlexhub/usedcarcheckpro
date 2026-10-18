@@ -19,3 +19,16 @@ def test_namespaced_max_upload_bytes_can_be_configured(monkeypatch) -> None:
     settings = Settings(_env_file=None)
 
     assert settings.max_upload_bytes == 20 * 1024 * 1024
+
+
+def test_nexus_storage_path_in_namespaced_variable_uses_safe_default(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv(
+        "PROVEH_MAX_UPLOAD_BYTES",
+        r"C:\Nexus\Storage\proveh-server\local",
+    )
+
+    settings = Settings(_env_file=None)
+
+    assert settings.max_upload_bytes == 10 * 1024 * 1024
