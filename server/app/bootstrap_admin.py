@@ -19,9 +19,9 @@ async def bootstrap_admin() -> None:
         return
 
     password = settings.admin_password.get_secret_value()
-    if len(password) < 12 or password.startswith("replace-with-"):
+    if len(password) < 10 or password.startswith("replace-with-"):
         raise RuntimeError(
-            "ADMIN_PASSWORD must be a non-placeholder value with at least 12 characters"
+            "ADMIN_PASSWORD must be a non-placeholder value with at least 10 characters"
         )
 
     hasher = PasswordHasher()

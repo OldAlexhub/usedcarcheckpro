@@ -50,9 +50,8 @@ ruff check .
 ## Nexus deployment
 
 1. Point the `proveh.server.oldalexhub.com` DNS record at Nexus.
-2. Copy `.env.example` to `.env`; replace the PostgreSQL password, admin password,
-   and admin session secret. Use a URL-safe PostgreSQL password. Keep this file
-   only on Nexus.
+2. Copy `.env.example` to `.env`; replace the PostgreSQL password and admin
+   password. Use a URL-safe PostgreSQL password. Keep this file only on Nexus.
 3. From this directory run `docker compose up -d --build`.
 4. Configure the existing Nexus reverse proxy to forward HTTPS traffic to
    `127.0.0.1:8080`. An nginx example is in `deploy/nginx-proveh.conf.example`.
@@ -61,19 +60,23 @@ ruff check .
    to verify collection and download the versioned analysis CSV.
 
 The API container runs `alembic upgrade head` before each start. PostgreSQL is
-not exposed publicly by the compose file. Deployment also creates the
-`ADMIN_USERNAME` portal account or updates its password from `ADMIN_PASSWORD`.
+not exposed publicly by the compose file. Application startup always creates
+the `ADMIN_USERNAME` portal account or updates its password from `ADMIN_PASSWORD`,
+including when Nexus launches Uvicorn without the Docker startup command.
 The example already sets the requested administrator username; the password is
 intentionally supplied only through the untracked Nexus `.env` file.
+`ADMIN_SESSION_SECRET` is optional. When it is absent or still a placeholder,
+the server derives a stable signing secret from the admin and database
+credentials so releases and restarts do not invalidate sessions unnecessarily.
 
-`MAX_UPLOAD_BYTES` is reserved by Nexus and may contain a storage path. The
-server deliberately ignores it. To change the API image-upload limit from the
-10 MiB default, set `PROVEH_MAX_UPLOAD_BYTES` to a positive integer number of
-bytes. If Nexus injects its storage path into that variable too, the server
-safely uses the 10 MiB default instead of failing startup.
+Image-quality requests use a fixed 10 MiB in-memory limit. The server ignores
+Nexus storage-path variables because uploaded images are not retained.
 
-If Nexus already provides PostgreSQL, run only the API service and supply a
-`postgresql+asyncpg://...` `DATABASE_URL`. Do not commit `.env`.
+For native Nexus deployment, choose **Create a new database** or an existing
+Nexus database in the deployment wizard. Nexus automatically injects its
+per-application credentials through `DATABASE_URL` (or standard PostgreSQL
+variables), and the server converts them to the async driver format. No manual
+connection string is needed. Do not commit `.env`.
 
 ## Backup
 

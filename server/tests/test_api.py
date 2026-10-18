@@ -11,6 +11,18 @@ from app.routes.admin import password_hasher
 
 
 @pytest.mark.asyncio
+async def test_root_opens_admin_portal(api_client: AsyncClient) -> None:
+    response = await api_client.get("/", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/admin"
+
+    portal = await api_client.get("/", follow_redirects=True)
+    assert portal.status_code == 200
+    assert "Administrator portal" in portal.text
+    assert "Sign in" in portal.text
+
+
+@pytest.mark.asyncio
 async def test_health_and_authenticated_sync(api_client: AsyncClient) -> None:
     live = await api_client.get("/api/v1/health/live")
     assert live.status_code == 200

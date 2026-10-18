@@ -3,8 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
+from app.bootstrap_admin import bootstrap_admin
 from app.config import get_settings
 from app.database import Base, engine
 from app.routes import admin, analytics, data, datasets, health, images, sync, vaults, vin
@@ -17,6 +19,10 @@ async def lifespan(_: FastAPI):
     if settings.auto_create_schema:
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
+    # Nexus can launch Uvicorn directly instead of executing the Docker CMD.
+    # Bootstrap here so every launch path guarantees the configured portal
+    # administrator exists and has the current deployment password.
+    await bootstrap_admin()
     yield
     await engine.dispose()
 
@@ -68,12 +74,9 @@ async def request_metadata(request: Request, call_next):
 
 
 @app.get("/", include_in_schema=False)
-async def root() -> dict[str, str]:
-    return {
-        "service": "proveh-server",
-        "status": "ok",
-        "docs": f"{settings.public_base_url.rstrip('/')}/docs",
-    }
+async def root() -> RedirectResponse:
+    """Make the public server address open the administrator portal."""
+    return RedirectResponse(url="/admin", status_code=303)
 
 
 app.include_router(admin.router)
