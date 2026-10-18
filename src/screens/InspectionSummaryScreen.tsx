@@ -24,7 +24,6 @@ import {
   getCriticalItems,
   getConcernItems,
   getNotCheckedItems,
-  getDecisionLabel,
   getPowertrainLabel,
 } from '../utils/inspectionUtils';
 import { formatDate } from '../utils/dateUtils';
@@ -34,6 +33,7 @@ import { exportInspectionJSON } from '../utils/jsonExport';
 import { tryShowInterstitial } from '../config/admob';
 import ProgressBar from '../components/ProgressBar';
 import StatusBadge from '../components/StatusBadge';
+import { DataCollectionService } from '../services/dataCollection';
 
 type Props = StackScreenProps<RootStackParamList, 'InspectionSummary'>;
 
@@ -46,10 +46,18 @@ interface DecisionOption {
 const DECISION_OPTIONS: DecisionOption[] = [
   { value: 'still_reviewing', label: 'Still Reviewing', color: '#64748B' },
   { value: 'ask_mechanic', label: 'Ask a Mechanic', color: '#3B82F6' },
-  { value: 'request_info', label: 'Request More Information', color: '#60A5FA' },
+  {
+    value: 'request_info',
+    label: 'Request More Information',
+    color: '#60A5FA',
+  },
   { value: 'considering', label: 'Considering Purchase', color: '#F59E0B' },
   { value: 'pass', label: 'Pass on This Vehicle', color: '#EF4444' },
-  { value: 'purchased', label: 'Purchased - Personal Record', color: '#22C55E' },
+  {
+    value: 'purchased',
+    label: 'Purchased - Personal Record',
+    color: '#22C55E',
+  },
 ];
 
 function SectionHeader({
@@ -98,7 +106,10 @@ function StatPill({
   );
 }
 
-function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Element {
+function InspectionSummaryScreen({
+  navigation,
+  route,
+}: Props): React.JSX.Element {
   const { inspectionId, isNew } = route.params;
 
   const [inspection, setInspection] = useState<Inspection | null>(null);
@@ -111,12 +122,13 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
 
   useEffect(() => {
     let cancelled = false;
-    StorageService.getInspection(inspectionId).then((insp) => {
+    StorageService.getInspection(inspectionId).then(insp => {
       if (cancelled) return;
       if (!insp) {
         setNotFound(true);
       } else {
         setInspection(insp);
+        DataCollectionService.submitInspectionOutcome(insp);
       }
       setLoading(false);
     });
@@ -136,6 +148,7 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
       };
       setInspection(updated);
       await StorageService.saveInspection(updated);
+      DataCollectionService.submitInspectionOutcome(updated);
     },
     [inspection],
   );
@@ -145,10 +158,19 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
     setExportingPdf(true);
     try {
       const filePath = await generateInspectionPDF(inspection);
-      await shareFile(filePath, `${inspection.vehicle.nickname || 'Inspection'} - Report`);
+      await shareFile(
+        filePath,
+        `${inspection.vehicle.nickname || 'Inspection'} - Report`,
+      );
+      DataCollectionService.trackEvent('report_exported', {
+        format: 'pdf',
+      });
       await tryShowInterstitial();
     } catch {
-      Alert.alert('Export Failed', 'Could not generate the PDF report. Please try again.');
+      Alert.alert(
+        'Export Failed',
+        'Could not generate the PDF report. Please try again.',
+      );
     } finally {
       setExportingPdf(false);
     }
@@ -159,9 +181,18 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
     setExportingJson(true);
     try {
       const filePath = await exportInspectionJSON(inspection);
-      await shareFile(filePath, `${inspection.vehicle.nickname || 'Inspection'} - Backup`);
+      await shareFile(
+        filePath,
+        `${inspection.vehicle.nickname || 'Inspection'} - Backup`,
+      );
+      DataCollectionService.trackEvent('report_exported', {
+        format: 'json',
+      });
     } catch {
-      Alert.alert('Export Failed', 'Could not export the JSON backup. Please try again.');
+      Alert.alert(
+        'Export Failed',
+        'Could not export the JSON backup. Please try again.',
+      );
     } finally {
       setExportingJson(false);
     }
@@ -231,7 +262,7 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
   });
 
   function getSectionIndex(sectionTitle: string): number {
-    const idx = inspection!.sections.findIndex((s) => s.title === sectionTitle);
+    const idx = inspection!.sections.findIndex(s => s.title === sectionTitle);
     return idx >= 0 ? idx : 0;
   }
 
@@ -250,9 +281,13 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
         {/* Section 1 - Vehicle Info                                            */}
         {/* ------------------------------------------------------------------ */}
         <View style={styles.card}>
-          <Text style={styles.vehicleNickname}>{vehicle.nickname || vehicleYMM}</Text>
+          <Text style={styles.vehicleNickname}>
+            {vehicle.nickname || vehicleYMM}
+          </Text>
           <Text style={styles.vehicleYMM}>{vehicleYMM}</Text>
-          <Text style={styles.powertrainBadge}>{getPowertrainLabel(vehicle.powertrainType)}</Text>
+          <Text style={styles.powertrainBadge}>
+            {getPowertrainLabel(vehicle.powertrainType)}
+          </Text>
 
           <View style={styles.divider} />
 
@@ -264,7 +299,10 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
               <InfoRow label="Asking Price" value={`$${vehicle.askingPrice}`} />
             ) : null}
             {vehicle.inspectionDate ? (
-              <InfoRow label="Inspected" value={formatDate(vehicle.inspectionDate)} />
+              <InfoRow
+                label="Inspected"
+                value={formatDate(vehicle.inspectionDate)}
+              />
             ) : null}
             {vehicle.exteriorColor ? (
               <InfoRow label="Color" value={vehicle.exteriorColor} />
@@ -286,14 +324,14 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
                   .join(' - ')}
               />
             ) : null}
-            {vehicle.vin ? (
-              <InfoRow label="VIN" value={vehicle.vin} />
-            ) : null}
+            {vehicle.vin ? <InfoRow label="VIN" value={vehicle.vin} /> : null}
           </View>
 
           <TouchableOpacity
             style={styles.editButton}
-            onPress={() => navigation.navigate('VehicleDetails', { inspectionId })}
+            onPress={() =>
+              navigation.navigate('VehicleDetails', { inspectionId })
+            }
             activeOpacity={0.8}
           >
             <Text style={styles.editButtonText}>Edit Vehicle Details</Text>
@@ -319,7 +357,11 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
             <StatPill count={stats.good} label="Good" color="#22C55E" />
             <StatPill count={stats.concern} label="Concern" color="#F59E0B" />
             <StatPill count={stats.critical} label="Critical" color="#EF4444" />
-            <StatPill count={stats.notChecked} label="Skipped" color="#64748B" />
+            <StatPill
+              count={stats.notChecked}
+              label="Skipped"
+              color="#64748B"
+            />
             <StatPill count={stats.notApplicable} label="N/A" color="#475569" />
           </View>
         </View>
@@ -360,7 +402,9 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
                   activeOpacity={0.75}
                 >
                   <View style={styles.flaggedItemLeft}>
-                    <Text style={styles.flaggedItemSection}>{sectionTitle}</Text>
+                    <Text style={styles.flaggedItemSection}>
+                      {sectionTitle}
+                    </Text>
                     <Text style={styles.flaggedItemLabel}>{item.label}</Text>
                     {item.notes ? (
                       <Text style={styles.flaggedItemNotes} numberOfLines={2}>
@@ -394,7 +438,9 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
                   activeOpacity={0.75}
                 >
                   <View style={styles.flaggedItemLeft}>
-                    <Text style={styles.flaggedItemSection}>{sectionTitle}</Text>
+                    <Text style={styles.flaggedItemSection}>
+                      {sectionTitle}
+                    </Text>
                     <Text style={styles.flaggedItemLabel}>{item.label}</Text>
                     {item.notes ? (
                       <Text style={styles.flaggedItemNotes} numberOfLines={2}>
@@ -418,12 +464,23 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
               label={`Not Checked (${notCheckedItems.length})`}
               color="#64748B"
             />
-            {notCheckedItems.map(({ sectionTitle, item }: { sectionTitle: string; item: ChecklistItemData }) => (
-              <View key={`${sectionTitle}-${item.id}`} style={styles.notCheckedItem}>
-                <Text style={styles.notCheckedSection}>{sectionTitle}</Text>
-                <Text style={styles.notCheckedLabel}>{item.label}</Text>
-              </View>
-            ))}
+            {notCheckedItems.map(
+              ({
+                sectionTitle,
+                item,
+              }: {
+                sectionTitle: string;
+                item: ChecklistItemData;
+              }) => (
+                <View
+                  key={`${sectionTitle}-${item.id}`}
+                  style={styles.notCheckedItem}
+                >
+                  <Text style={styles.notCheckedSection}>{sectionTitle}</Text>
+                  <Text style={styles.notCheckedLabel}>{item.label}</Text>
+                </View>
+              ),
+            )}
           </View>
         ) : null}
 
@@ -434,7 +491,10 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
           <Text style={styles.cardTitle}>Export and Share</Text>
 
           <TouchableOpacity
-            style={[styles.actionButton, exportingPdf ? styles.actionButtonDisabled : null]}
+            style={[
+              styles.actionButton,
+              exportingPdf ? styles.actionButtonDisabled : null,
+            ]}
             onPress={handleExportPdf}
             activeOpacity={0.8}
             disabled={exportingPdf}
@@ -447,7 +507,11 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonSecondary, exportingJson ? styles.actionButtonDisabled : null]}
+            style={[
+              styles.actionButton,
+              styles.actionButtonSecondary,
+              exportingJson ? styles.actionButtonDisabled : null,
+            ]}
             onPress={handleExportJson}
             activeOpacity={0.8}
             disabled={exportingJson}
@@ -455,7 +519,12 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
             {exportingJson ? (
               <ActivityIndicator size="small" color="#94A3B8" />
             ) : (
-              <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>
+              <Text
+                style={[
+                  styles.actionButtonText,
+                  styles.actionButtonTextSecondary,
+                ]}
+              >
                 Export JSON Backup
               </Text>
             )}
@@ -465,7 +534,10 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
         {/* Return to Home / Back button */}
         {isNew ? (
           <TouchableOpacity
-            style={[styles.primaryButton, returningHome ? styles.primaryButtonDisabled : null]}
+            style={[
+              styles.primaryButton,
+              returningHome ? styles.primaryButtonDisabled : null,
+            ]}
             onPress={handleReturnHome}
             activeOpacity={0.85}
             disabled={returningHome}
@@ -510,7 +582,7 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
               </TouchableOpacity>
             </View>
 
-            {DECISION_OPTIONS.map((option) => {
+            {DECISION_OPTIONS.map(option => {
               const isSelected = inspection.decisionStatus === option.value;
               return (
                 <TouchableOpacity
@@ -523,7 +595,10 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
                   activeOpacity={0.75}
                 >
                   <View
-                    style={[styles.decisionDot, { backgroundColor: option.color }]}
+                    style={[
+                      styles.decisionDot,
+                      { backgroundColor: option.color },
+                    ]}
                   />
                   <Text
                     style={[
@@ -534,7 +609,9 @@ function InspectionSummaryScreen({ navigation, route }: Props): React.JSX.Elemen
                     {option.label}
                   </Text>
                   {isSelected ? (
-                    <Text style={[styles.decisionCheck, { color: option.color }]}>
+                    <Text
+                      style={[styles.decisionCheck, { color: option.color }]}
+                    >
                       Selected
                     </Text>
                   ) : null}

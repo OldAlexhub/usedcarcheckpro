@@ -26,9 +26,11 @@ Used Car Check Pro is a free Android app that guides used-car buyers through a c
 - **Export PDF comparison reports** - side-by-side comparison PDF
 - **Export JSON backup** of any inspection record
 - **Android share integration** - share PDFs via email, messaging, or any share target
-- **Works completely offline** - all core features require no internet connection
+- **Offline-first core workflow** - checklist, saved inspections, comparison, and exports work without internet
 - **Free with Google AdMob ads** - banner ads on Home, Saved, and Compare screens; interstitial ad after completing a new inspection (max once per session and once per 24 hours)
 - **No account required** - no sign-in, no registration, no cloud sync
+- **Automatic VIN lookup** - entering a complete VIN can fill vehicle details through the self-hosted Proveh API and NHTSA
+- **Privacy-bounded dataset pipeline** - pseudonymous, versioned inspection outcomes are queued offline and delivered to the self-hosted Proveh API after disclosure acceptance
 
 ### Inspection Sections
 
@@ -57,9 +59,9 @@ Used Car Check Pro is a free Android app that guides used-car buyers through a c
 - Does not confirm the absence of hidden defects
 - Does not determine market value or recommend purchase
 - Does not calculate safety scores, reliability scores, or deal scores
-- Does not decode VINs or look up recall data
+- Does not yet look up vehicle-specific open recalls
 - Does not use the camera or take photos
-- Does not connect to any backend, cloud, or external data source
+- Does not use LLMs or proprietary hosted AI
 
 Always consult a qualified mechanic and review all relevant records before making a purchase decision.
 
@@ -120,6 +122,9 @@ usedcarcheckpro/
       VehicleDetailsScreen - New inspection vehicle details form
     storage/
       storage.ts         - AsyncStorage read/write operations
+    services/
+      dataCollection.ts  - Offline dataset/event queue and deletion flow
+      serverApi.ts       - VIN lookup API client
     types/
       index.ts           - All TypeScript interfaces and type definitions
     utils/
@@ -129,6 +134,7 @@ usedcarcheckpro/
       shareUtils.ts      - Android share and file export helpers
   store_assets/          - Play Store listing copy, notes, and documentation
   App.tsx                - App entry point
+  server/                - Self-hosted FastAPI/PostgreSQL smart-services API
   app-ads.txt            - AdMob authorized sellers file (host at developer website root)
   PRIVACYPOLICY.md       - Full privacy policy
 ```
@@ -231,9 +237,11 @@ See `store_assets/admob-setup-notes.md` for full setup and verification instruct
 
 ## Privacy
 
-- All inspection data is stored locally on-device using AsyncStorage
-- No personal data is collected or transmitted by the developer
-- The only internet activity is Google AdMob ad requests
+- Complete inspection records remain on-device using AsyncStorage
+- A limited, pseudonymous dataset includes vehicle attributes, value ranges, checklist statuses, and decisions after disclosure acceptance
+- VIN, nickname, seller name, listing URL, notes, precise location, and photos are excluded from the product dataset
+- VIN lookup sends the VIN to Proveh Server and NHTSA; AdMob separately processes advertising data
+- Settings can delete local data and authenticated server records for the anonymous installation
 - Only the INTERNET permission is declared in AndroidManifest.xml
 - See `PRIVACYPOLICY.md` for the complete privacy policy
 

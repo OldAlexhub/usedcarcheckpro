@@ -14,9 +14,9 @@ This is the only permission in the app's AndroidManifest.xml.
 
 ## Why INTERNET Permission Is Required
 
-The INTERNET permission is required solely for Google AdMob to serve advertisements. Without this permission, the AdMob SDK cannot communicate with Google's ad servers to request and display ads.
+The INTERNET permission is required for Google AdMob, optional VIN lookup through Proveh Server and NHTSA, and secure delivery of the disclosed product-improvement dataset and allowlisted events to Proveh Server.
 
-All inspection data is stored locally using AsyncStorage. All PDF generation happens on-device. All JSON export happens on-device. No user data is transmitted over the internet by the app.
+Complete inspection records remain local in AsyncStorage, and PDF/JSON generation happens on-device. A limited pseudonymous outcome record is transmitted after disclosure acceptance; VINs, seller names, listing URLs, notes, precise location, and photos are excluded. See the Privacy Policy and data-safety notes.
 
 ---
 
@@ -50,7 +50,7 @@ Requesting only the INTERNET permission means:
 - The app cannot read contacts, call logs, or other personal information from the device
 - The app cannot identify the device beyond what AdMob uses for advertising (advertising ID, which is governed by Google's policies and can be reset or opted out by the user)
 
-This minimal permission footprint reflects the app's design: all features are local and offline, with advertising being the only function that requires network access.
+This minimal permission footprint reflects the app's offline-first design. Core inspection features are local; advertising, VIN lookup, and disclosed dataset delivery use the network.
 
 ---
 
@@ -64,4 +64,4 @@ When completing the Data Safety form in the Play Console:
 - Microphone: Not accessed
 - Storage: App only uses its own private storage directory, not shared external storage
 
-The only network-capable component is AdMob. Disclose AdMob's data practices per Google's AdMob Data Safety guidance document.
+Disclose Old Alex Hub's pseudonymous product dataset, the VIN transfer to Proveh Server/NHTSA, and AdMob's current data practices as documented in `data-safety-notes.md`.

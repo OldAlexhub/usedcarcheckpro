@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proveh Server · Sign in</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #11151b; color: #f1f5f9; }
+      main { width: min(92vw, 420px); padding: 32px; border: 1px solid #374151; border-radius: 18px; background: #20262f; box-shadow: 0 24px 80px #0008; }
+      .mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: #2563eb; font-size: 24px; font-weight: 800; }
+      h1 { margin: 20px 0 4px; font-size: 26px; }
+      p { margin: 0 0 24px; color: #94a3b8; }
+      label { display: block; margin: 16px 0 7px; font-size: 13px; font-weight: 700; color: #cbd5e1; }
+      input { width: 100%; padding: 13px 14px; border: 1px solid #475569; border-radius: 10px; background: #151a21; color: #fff; font: inherit; }
+      input:focus { outline: 2px solid #3b82f6; border-color: transparent; }
+      button { width: 100%; margin-top: 22px; padding: 13px; border: 0; border-radius: 10px; background: #3b82f6; color: white; font: inherit; font-weight: 800; cursor: pointer; }
+      .error { padding: 10px 12px; border: 1px solid #7f1d1d; border-radius: 9px; background: #3f171b; color: #fecaca; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark">P</div>
+      <h1>Proveh Server</h1>
+      <p>Administrator portal</p>
+      {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+      <form method="post" action="/admin/login">
+        <input type="hidden" name="csrf" value="{{ csrf }}" />
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required autofocus />
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+        <button type="submit">Sign in</button>
+      </form>
+    </main>
+  </body>
+</html>
+

@@ -48,9 +48,9 @@ PDF REPORTS
 
 Export a full PDF inspection report for any vehicle, including all details, every checklist item and its status, your notes, and your decision. Share via email, messaging, or any Android share target. Everything generated on your device - no upload required.
 
-WORKS COMPLETELY OFFLINE
+CORE INSPECTION TOOLS WORK OFFLINE
 
-All core features work with no internet connection. The only feature requiring internet is the display of ads.
+The guided checklist, saved inspections, comparison, and on-device exports work without internet. VIN lookup, advertising, and secure delivery of the limited product-improvement dataset require a connection and retry automatically when needed.
 
 FREE WITH ADS
 
@@ -59,6 +59,10 @@ Free to download and use, supported by Google AdMob banner and interstitial ads.
 NO ACCOUNT REQUIRED
 
 No sign-in, no registration, no cloud sync, and no subscription. Open the app and start inspecting.
+
+PRODUCT DATA AND PRIVACY
+
+Complete inspection records stay on your device. After clear onboarding disclosure, Old Alex Hub collects a limited pseudonymous dataset of vehicle attributes, value ranges, checklist statuses, decisions, and allowlisted product events for analysis and future open-source features. VINs, seller names, listing URLs, notes, precise location, and photos are excluded from that dataset. It is not sold or shared for third-party marketing. VIN lookup and Google AdMob involve separate processing described in the Privacy Policy.
 
 DISCLAIMER
 

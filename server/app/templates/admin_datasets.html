@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proveh Server &middot; Datasets</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #11151b; color: #f1f5f9; }
+      header { padding: 18px max(24px, calc((100vw - 1080px) / 2)); border-bottom: 1px solid #303846; background: #1a2029; }
+      main { width: min(1080px, calc(100% - 40px)); margin: 38px auto; }
+      a { color: #60a5fa; }
+      .eyebrow { color: #60a5fa; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      h1 { margin: 8px 0; }
+      .intro, .muted { color: #94a3b8; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 26px 0; }
+      .card, .dataset { padding: 20px; border: 1px solid #374151; border-radius: 14px; background: #20262f; }
+      .number { font-size: 30px; font-weight: 800; color: #60a5fa; }
+      .label { color: #94a3b8; margin-top: 4px; }
+      .dataset { margin: 18px 0; }
+      .dataset h2 { margin-top: 0; }
+      .pill { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #123a28; color: #86efac; font-size: 12px; font-weight: 700; }
+      dl { display: grid; grid-template-columns: 170px 1fr; gap: 10px 16px; }
+      dt { color: #94a3b8; }
+      dd { margin: 0; }
+      .button { display: inline-block; margin-top: 14px; padding: 10px 14px; border-radius: 9px; background: #2563eb; color: white; text-decoration: none; font-weight: 700; }
+      code { color: #c4b5fd; }
+    </style>
+  </head>
+  <body>
+    <header><a href="/admin">&larr; Server dashboard</a></header>
+    <main>
+      <div class="eyebrow">Private data catalog</div>
+      <h1>Datasets</h1>
+      <p class="intro">Versioned, first-party datasets collected for Old Alex Hub product analysis and future open-source machine-learning features.</p>
+
+      <section class="grid" aria-label="Dataset statistics">
+        <article class="card"><div class="number">{{ record_count }}</div><div class="label">Inspection outcomes</div></article>
+        <article class="card"><div class="number">{{ contributing_installs }}</div><div class="label">Contributing installs</div></article>
+        <article class="card"><div class="number">{{ event_count }}</div><div class="label">Product events</div></article>
+        <article class="card"><div class="number">{{ min_year or '-' }}{% if max_year and max_year != min_year %}&ndash;{{ max_year }}{% endif %}</div><div class="label">Vehicle-year coverage</div></article>
+      </section>
+
+      <article class="dataset">
+        <span class="pill">Collecting</span>
+        <h2>Inspection outcomes <code>v1</code></h2>
+        <dl>
+          <dt>Purpose</dt><dd>Checklist-pattern analysis, feature improvement, and future non-LLM model development.</dd>
+          <dt>Provenance</dt><dd>Completed mobile inspections after data-use disclosure acceptance.</dd>
+          <dt>Included</dt><dd>Year/make/model/trim, powertrain, seller category, price and odometer bands, decision, and checklist item statuses.</dd>
+          <dt>Always excluded</dt><dd>VIN, nickname, listing URL, seller name, free-text notes, precise location, and photos.</dd>
+          <dt>Retention</dt><dd>{{ dataset_retention_days }} days, enforced during ingestion.</dd>
+          <dt>Powertrains</dt><dd>{% for name, count in powertrains %}{{ name }} ({{ count }}){% if not loop.last %}, {% endif %}{% else %}No records yet{% endfor %}</dd>
+          <dt>Last received</dt><dd>{{ last_received.isoformat() if last_received else 'No records yet' }}</dd>
+        </dl>
+        <a class="button" href="/admin/datasets/inspection-outcomes.csv">Export analysis CSV</a>
+      </article>
+
+      <article class="dataset">
+        <span class="pill">Collecting</span>
+        <h2>Product events <code>v1</code></h2>
+        <p class="muted">Allowlisted operational events with bounded properties. No arbitrary text fields are accepted by the API.</p>
+      </article>
+    </main>
+  </body>
+</html>

@@ -69,9 +69,9 @@ JSON BACKUP EXPORT
 
 Export any inspection record as a JSON file for personal backup or archiving.
 
-WORKS COMPLETELY OFFLINE
+CORE INSPECTION TOOLS WORK OFFLINE
 
-All core features work with no internet connection. Create inspections, review checklists, save records, compare vehicles, and export PDF reports entirely offline. The only feature that requires internet is the display of ads.
+Create inspections, review checklists, save records, compare vehicles, and export reports without internet. VIN lookup, ads, and secure delivery of the disclosed product-improvement dataset require a connection and retry without blocking the core workflow.
 
 FREE WITH ADS
 
@@ -83,7 +83,7 @@ No sign-in, no registration, no email address, no cloud sync, and no subscriptio
 
 PRIVACY
 
-All inspection data is stored locally on your device. No personal information is collected or transmitted by the developer. The app uses Google AdMob for advertising, which operates according to Google's privacy policies.
+Complete inspection records stay on your device. Old Alex Hub collects a limited pseudonymous dataset of vehicle attributes, value ranges, checklist statuses, decisions, and allowlisted product events for analysis and future feature development. VINs, seller names, listing URLs, notes, precise location, and photos are excluded from that dataset. The product dataset is not sold or shared for third-party marketing. VIN lookup and Google AdMob involve separate service processing described in the Privacy Policy.
 
 DISCLAIMER
 
@@ -93,7 +93,7 @@ Used Car Check Pro is an observation and organization tool designed to help you 
 
 ## Promo Text (170 characters max)
 
-Inspect smarter before you buy. Record your used car findings, compare vehicles, and export professional reports - all offline and free.
+Inspect smarter before you buy. Record findings, compare vehicles, and export professional reports with an offline-first, free inspection guide.
 
 ---
 

@@ -2,20 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import MobileAds, { RequestConfiguration } from 'react-native-google-mobile-ads';
+import MobileAds, {
+  RequestConfiguration,
+} from 'react-native-google-mobile-ads';
 import { StorageService } from './src/storage/storage';
 import { AppSettings } from './src/types';
 import AppNavigator from './src/navigation/AppNavigator';
+import { DataCollectionService } from './src/services/dataCollection';
 
 const DEFAULT_SETTINGS: AppSettings = {
   hasCompletedOnboarding: false,
+  hasAcceptedDataUse: false,
   lastInterstitialShownDate: null,
   interstitialShownThisSession: false,
 };
 
 function App(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [initialRoute, setInitialRoute] = useState<'Onboarding' | 'MainTabs'>('Onboarding');
+  const [initialRoute, setInitialRoute] = useState<'Onboarding' | 'MainTabs'>(
+    'Onboarding',
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -47,8 +53,15 @@ function App(): React.JSX.Element {
         if (isMounted) {
           setSettings(sessionSettings);
           setInitialRoute(
-            sessionSettings.hasCompletedOnboarding ? 'MainTabs' : 'Onboarding',
+            sessionSettings.hasCompletedOnboarding &&
+              sessionSettings.hasAcceptedDataUse
+              ? 'MainTabs'
+              : 'Onboarding',
           );
+          DataCollectionService.flush();
+          if (sessionSettings.hasAcceptedDataUse) {
+            DataCollectionService.trackEvent('app_opened');
+          }
         }
       } catch {
         if (isMounted) {

@@ -14,6 +14,11 @@ import { StorageService } from '../storage/storage';
 import { tryShowInterstitial } from '../config/admob';
 import ProgressBar from '../components/ProgressBar';
 import ChecklistItemRow from '../components/ChecklistItemRow';
+import { DataCollectionService } from '../services/dataCollection';
+import {
+  getCompletionPercentage,
+  getCompletionStats,
+} from '../utils/inspectionUtils';
 
 type Props = StackScreenProps<RootStackParamList, 'Checklist'>;
 
@@ -31,7 +36,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
     let cancelled = false;
     setLoading(true);
     setNotFound(false);
-    StorageService.getInspection(inspectionId).then((result) => {
+    StorageService.getInspection(inspectionId).then(result => {
       if (cancelled) return;
       if (!result) {
         setNotFound(true);
@@ -55,7 +60,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
         if (idx !== sectionIndex) return section;
         return {
           ...section,
-          items: section.items.map((item) =>
+          items: section.items.map(item =>
             item.id === updatedItem.id ? updatedItem : item,
           ),
         };
@@ -94,6 +99,18 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
         totalSections,
       });
     } else {
+      const completedInspection = inspectionRef.current;
+      if (completedInspection) {
+        const stats = getCompletionStats(completedInspection);
+        DataCollectionService.trackEvent('inspection_completed', {
+          powertrain: completedInspection.vehicle.powertrainType,
+          completion_percent: getCompletionPercentage(completedInspection),
+          critical_count: stats.critical,
+          concern_count: stats.concern,
+          not_checked_count: stats.notChecked,
+        });
+        DataCollectionService.submitInspectionOutcome(completedInspection);
+      }
       await tryShowInterstitial();
       navigation.navigate('InspectionSummary', {
         inspectionId,
@@ -170,7 +187,8 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
         <Text style={styles.emptySection}>No items in this section.</Text>
       ) : (
         <Text style={styles.itemCount}>
-          {section.items.length} item{section.items.length !== 1 ? 's' : ''} to check
+          {section.items.length} item{section.items.length !== 1 ? 's' : ''} to
+          check
         </Text>
       )}
     </View>
@@ -182,7 +200,7 @@ function ChecklistScreen({ navigation, route }: Props): React.JSX.Element {
     <SafeAreaView style={styles.root} edges={['bottom']}>
       <FlatList
         data={section.items}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <ChecklistItemRow item={item} onUpdate={handleItemUpdate} />
         )}

@@ -51,9 +51,9 @@ Use this checklist to verify all required steps are complete before and during s
 ## Data Safety Section
 
 - [ ] Data Safety form completed - reference `data-safety-notes.md` for all field answers
-- [ ] "Does your app collect or share user data?" answered per guidance in data-safety-notes.md (Yes, due to AdMob - follow Google's AdMob Data Safety guidance)
+- [ ] "Does your app collect or share user data?" answered Yes for the first-party dataset, VIN lookup, and AdMob practices described in `data-safety-notes.md`
 - [ ] AdMob data practices disclosed as required by Google
-- [ ] Data deletion method described: users can delete data in-app or via Android app settings
+- [ ] Data deletion method described: use in-app Clear All Data to delete local and authenticated server records
 - [ ] Form submitted and confirmed
 
 ---

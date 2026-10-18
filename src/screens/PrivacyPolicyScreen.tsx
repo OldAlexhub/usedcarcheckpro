@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -54,77 +49,113 @@ function PrivacyPolicyScreen(_props: Props): React.JSX.Element {
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Privacy Policy</Text>
-        <Text style={styles.lastUpdated}>Last updated: January 2025</Text>
+        <Text style={styles.lastUpdated}>Last updated: October 18, 2026</Text>
 
         <PolicySection title="1. Overview">
           <Body>
-            {'Used Car Check Pro ("the app") is a free Android application developed by Old Alex Hub. This policy explains how the app handles information.'}
+            {
+              'Used Car Check Pro ("the app") is a free Android application developed by Old Alex Hub. This policy explains how the app handles information.'
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="2. Information We Collect">
           <Body>
-            {'The app does not collect or transmit your personal information to any server operated by Old Alex Hub. All inspection records you create are stored locally on your device.'}
+            {
+              'Your full inspection record remains on your device. After you accept the data-use disclosure, the app sends Old Alex Hub a structured inspection-outcomes record containing vehicle year, make, model and trim; powertrain; seller category; odometer and asking-price ranges; checklist item statuses; and decision status.'
+            }
           </Body>
           <Text style={styles.spacer} />
           <Body>
-            {'The app uses Google AdMob to display advertisements. AdMob may collect device identifiers, usage data, and ad interaction data as described in Google\'s Privacy Policy. This data is processed by Google, not by Old Alex Hub.'}
+            {
+              'The dataset never includes the VIN, vehicle nickname, listing URL, seller name, free-text notes, precise location, or photos. The app also sends allowlisted product events, app version, platform, and a random installation identifier. Arbitrary text is not accepted by these endpoints.'
+            }
+          </Body>
+          <Text style={styles.spacer} />
+          <Body>
+            {
+              'If you enter a complete VIN, the app sends it to proveh.server.oldalexhub.com and the NHTSA vehicle-data service. Proveh caches a one-way VIN hash and decoded attributes for up to 30 days, not the raw VIN. Infrastructure may temporarily process IP address, request time, and errors for security and reliability.'
+            }
+          </Body>
+          <Text style={styles.spacer} />
+          <Body>
+            {
+              "Google AdMob may separately collect device identifiers, usage data, and ad interaction data under Google's policies."
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="3. Advertising">
           <Body>
-            {'The app is free and supported by advertising. Google AdMob displays ads on selected screens. AdMob may show personalized ads based on your Google account settings and device data. You can manage ad personalization in your Google account settings.'}
+            {
+              'The app is free and supported by advertising. Google AdMob displays ads on selected screens. AdMob may show personalized ads based on your Google account settings and device data. You can manage ad personalization in your Google account settings.'
+            }
           </Body>
           <Text style={styles.spacer} />
           <Body>
-            {'For more information about how Google uses data when you use our app, visit: google.com/policies/privacy/partners'}
+            {
+              'For more information about how Google uses data when you use our app, visit: google.com/policies/privacy/partners'
+            }
           </Body>
         </PolicySection>
 
-        <PolicySection title="4. Your Inspection Data">
+        <PolicySection title="4. Product Dataset and Your Inspection Data">
           <Body>
-            {'All inspection data you enter (vehicle details, checklist responses, notes) is stored locally on your device using Android local storage. This data is not transmitted to any server by Old Alex Hub.'}
+            {
+              'Old Alex Hub uses the pseudonymous dataset only for product analysis, product improvement, and future features built with open-source technology. No LLM is used. We do not sell this dataset, license it to others, or share it for third-party marketing. Inspection outcomes are retained for up to five years and product events for up to one year.'
+            }
           </Body>
           <Text style={styles.spacer} />
           <Body>
-            {'If you use the export or share feature, your data will be shared in the format and with the app you choose. We have no control over data you choose to share.'}
+            {
+              'Your complete inspection, including exact price, odometer, VIN, seller details, and notes, remains local. If you export or share it, data goes only to the app and recipient you choose.'
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="5. Internet Permission">
           <Body>
-            {'The app requires the INTERNET permission solely for loading and displaying advertisements from Google AdMob, and for ad-related privacy messaging required by Google.'}
+            {
+              'The app uses the INTERNET permission for Google AdMob, related privacy messaging, VIN lookup, and secure delivery of the limited product dataset and events to Proveh Server.'
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="6. Permissions">
           <Body>
-            {'The app requests only the INTERNET permission. It does not request camera, microphone, location, contacts, storage, or any other sensitive permissions.'}
+            {
+              'The app requests only the INTERNET permission. It does not request camera, microphone, location, contacts, storage, or any other sensitive permissions.'
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="7. Data Deletion">
           <Body>
-            {'You can delete all locally stored inspection data at any time in Settings. You can also clear all app data through Android settings under Apps.'}
+            {
+              'Settings > Clear All Data deletes local inspections and sends an authenticated request to delete the product dataset and events associated with this anonymous installation. If you are offline, the request is queued and collection pauses until deletion succeeds. VIN cache entries expire automatically after 30 days.'
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="8. Children">
           <Body>
-            {'The app is not directed at children under 13. We do not knowingly collect information from children.'}
+            {
+              'The app is not directed at children under 13. We do not knowingly collect information from children.'
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="9. Changes">
           <Body>
-            {'We may update this policy. Continued use of the app after changes constitutes acceptance.'}
+            {
+              'We may update this policy. Continued use of the app after changes constitutes acceptance.'
+            }
           </Body>
         </PolicySection>
 
         <PolicySection title="10. Contact">
           <Body>
-            {'For questions about this policy, contact: mohamedgad.gm@gmail.com'}
+            {'For questions about this policy, contact: info@oldalexhub.com'}
           </Body>
         </PolicySection>
       </ScrollView>

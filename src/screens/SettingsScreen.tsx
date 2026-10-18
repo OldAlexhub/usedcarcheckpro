@@ -12,10 +12,12 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { StackScreenProps } from '@react-navigation/stack';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { MainTabParamList, RootStackParamList } from '../types';
 import { StorageService } from '../storage/storage';
 import { APP_NAME, APP_VERSION, DEVELOPER } from '../config/constants';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { DataCollectionService } from '../services/dataCollection';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Settings'>,
@@ -88,7 +90,11 @@ function SectionCard({ rows }: { rows: RowItem[] }): React.JSX.Element {
 
         if (row.onPress) {
           return (
-            <TouchableOpacity key={row.label} onPress={row.onPress} activeOpacity={0.7}>
+            <TouchableOpacity
+              key={row.label}
+              onPress={row.onPress}
+              activeOpacity={0.7}
+            >
               {content}
             </TouchableOpacity>
           );
@@ -165,18 +171,27 @@ function SettingsScreen({ navigation }: Props): React.JSX.Element {
 
   async function handleClearData(): Promise<void> {
     setClearDialogVisible(false);
+    const serverDataDeleted = await DataCollectionService.deleteCollectedData();
     await StorageService.clearAllData();
-    Alert.alert('All data cleared.', '', [
-      {
-        text: 'OK',
-        onPress: () => {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Onboarding' }],
-          });
+    Alert.alert(
+      serverDataDeleted ? 'All data cleared.' : 'Local data cleared.',
+      serverDataDeleted
+        ? 'Local inspections and data associated with this anonymous installation were deleted.'
+        : 'The server deletion is queued and will retry when you are online. No new data will be collected until it completes.',
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            navigation
+              .getParent<StackNavigationProp<RootStackParamList>>()
+              ?.reset({
+                index: 0,
+                routes: [{ name: 'Onboarding' }],
+              });
+          },
         },
-      },
-    ]);
+      ],
+    );
   }
 
   const aboutRows: RowItem[] = [
@@ -195,6 +210,11 @@ function SettingsScreen({ navigation }: Props): React.JSX.Element {
       label: 'About Advertising',
       onPress: handleAboutAdvertising,
       showChevron: true,
+    },
+    {
+      label: 'About Product Data',
+      value:
+        'Pseudonymous, structured inspection outcomes are used only by Old Alex Hub for analysis and future feature development. Sensitive and free-text fields are excluded.',
     },
     {
       label: 'app-ads.txt',
@@ -220,13 +240,16 @@ function SettingsScreen({ navigation }: Props): React.JSX.Element {
     {
       label: 'Permissions',
       value:
-        'This app uses the INTERNET permission for advertising. No other permissions are required or requested.',
+        'This app uses the INTERNET permission for advertising, VIN lookup, and secure dataset delivery. No other permissions are required or requested.',
     },
   ];
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+      >
         <Text style={styles.screenTitle}>Settings</Text>
 
         <SectionHeader title="About" />
@@ -247,7 +270,7 @@ function SettingsScreen({ navigation }: Props): React.JSX.Element {
       <ConfirmDialog
         visible={clearDialogVisible}
         title="Clear All Data"
-        message="This will permanently delete all saved inspections and reset all settings. This action cannot be undone."
+        message="This permanently deletes saved inspections, resets settings, and requests deletion of data associated with this anonymous installation. This cannot be undone."
         confirmLabel="Clear All"
         confirmColor="#EF4444"
         onConfirm={handleClearData}

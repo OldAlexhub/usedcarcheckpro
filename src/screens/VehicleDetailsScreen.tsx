@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,15 +16,27 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 import { StackScreenProps } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RootStackParamList, VehicleDetails, PowertrainType, SellerType } from '../types';
+import {
+  RootStackParamList,
+  VehicleDetails,
+  PowertrainType,
+  SellerType,
+} from '../types';
 import { StorageService } from '../storage/storage';
 import { createNewInspection } from '../utils/inspectionUtils';
 import { getTodayISO, formatDate } from '../utils/dateUtils';
+import {
+  decodeVin,
+  inferPowertrain,
+  ServerApiError,
+} from '../services/serverApi';
+import { DataCollectionService } from '../services/dataCollection';
 
 type Props = StackScreenProps<RootStackParamList, 'VehicleDetails'>;
 
 interface FormErrors {
   nickname?: string;
+  vin?: string;
   year?: string;
   make?: string;
   model?: string;
@@ -53,42 +65,119 @@ const SELLER_OPTIONS: Array<{ value: SellerType; label: string }> = [
   { value: 'other', label: 'Other' },
 ];
 
-function PowertrainIcon({ type, selected }: { type: PowertrainType; selected: boolean }): React.JSX.Element {
+function PowertrainIcon({
+  type,
+  selected,
+}: {
+  type: PowertrainType;
+  selected: boolean;
+}): React.JSX.Element {
   const color = selected ? '#FFFFFF' : '#94A3B8';
   const size = 20;
 
   if (type === 'gasoline' || type === 'diesel') {
     return (
-      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: 10, height: 14, borderRadius: 2, borderWidth: 2, borderColor: color }} />
-        <View style={{ width: 6, height: 4, backgroundColor: color, marginTop: -2, borderRadius: 1 }} />
+      <View
+        style={{
+          width: size,
+          height: size,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <View
+          style={{
+            width: 10,
+            height: 14,
+            borderRadius: 2,
+            borderWidth: 2,
+            borderColor: color,
+          }}
+        />
+        <View
+          style={{
+            width: 6,
+            height: 4,
+            backgroundColor: color,
+            marginTop: -2,
+            borderRadius: 1,
+          }}
+        />
       </View>
     );
   }
   if (type === 'hybrid') {
     return (
-      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: color }} />
-        <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
-          <View style={{ width: 8, height: 2, backgroundColor: color, transform: [{ rotate: '-45deg' }] }} />
+      <View
+        style={{
+          width: size,
+          height: size,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <View
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: 8,
+            borderWidth: 2,
+            borderColor: color,
+          }}
+        />
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { alignItems: 'center', justifyContent: 'center' },
+          ]}
+        >
+          <View
+            style={{
+              width: 8,
+              height: 2,
+              backgroundColor: color,
+              transform: [{ rotate: '-45deg' }],
+            }}
+          />
         </View>
       </View>
     );
   }
   // electric - bolt icon
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{
-        width: 0, height: 0,
-        borderLeftWidth: 6, borderRightWidth: 3, borderBottomWidth: 10,
-        borderLeftColor: 'transparent', borderRightColor: 'transparent', borderBottomColor: color,
-      }} />
-      <View style={{
-        width: 0, height: 0,
-        borderLeftWidth: 3, borderRightWidth: 6, borderTopWidth: 10,
-        borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: color,
-        marginTop: -2,
-      }} />
+    <View
+      style={{
+        width: size,
+        height: size,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <View
+        style={{
+          width: 0,
+          height: 0,
+          borderLeftWidth: 6,
+          borderRightWidth: 3,
+          borderBottomWidth: 10,
+          borderLeftColor: 'transparent',
+          borderRightColor: 'transparent',
+          borderBottomColor: color,
+        }}
+      />
+      <View
+        style={{
+          width: 0,
+          height: 0,
+          borderLeftWidth: 3,
+          borderRightWidth: 6,
+          borderTopWidth: 10,
+          borderLeftColor: 'transparent',
+          borderRightColor: 'transparent',
+          borderTopColor: color,
+          marginTop: -2,
+        }}
+      />
     </View>
   );
 }
@@ -120,14 +209,20 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
   const [form, setForm] = useState<VehicleDetails>(EMPTY_VEHICLE);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [powertrainSelected, setPowertrainSelected] = useState<PowertrainType>('gasoline');
+  const [powertrainSelected, setPowertrainSelected] =
+    useState<PowertrainType>('gasoline');
+  const [vinLookupState, setVinLookupState] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle');
+  const [vinLookupMessage, setVinLookupMessage] = useState('');
+  const lastLookedUpVin = useRef('');
 
   useEffect(() => {
     if (!inspectionId) {
       setLoading(false);
       return;
     }
-    StorageService.getInspection(inspectionId).then((inspection) => {
+    StorageService.getInspection(inspectionId).then(inspection => {
       if (inspection) {
         setForm({ ...inspection.vehicle });
         setPowertrainSelected(inspection.vehicle.powertrainType);
@@ -136,16 +231,92 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
     });
   }, [inspectionId]);
 
-  const setField = useCallback(<K extends keyof VehicleDetails>(key: K, value: VehicleDetails[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: undefined }));
-  }, []);
+  useEffect(() => {
+    const vin = form.vin.trim().toUpperCase();
+    if (vin.length !== 17 || vin === lastLookedUpVin.current) {
+      if (vin.length !== 17) {
+        setVinLookupState('idle');
+        setVinLookupMessage('');
+      }
+      return;
+    }
+
+    const controller = new AbortController();
+    const lookupDelay = setTimeout(async () => {
+      setVinLookupState('loading');
+      setVinLookupMessage('Looking up vehicle details...');
+      try {
+        const result = await decodeVin(vin, controller.signal);
+        if (!result.year && !result.make && !result.model) {
+          throw new ServerApiError(
+            'No vehicle details were found for this VIN',
+          );
+        }
+
+        const powertrain = inferPowertrain(result);
+        const suggestedNickname = [result.year, result.make, result.model]
+          .filter(Boolean)
+          .join(' ');
+
+        setForm(previous => ({
+          ...previous,
+          year: result.year || previous.year,
+          make: result.make || previous.make,
+          model: result.model || previous.model,
+          trim: result.trim || previous.trim,
+          nickname: previous.nickname || suggestedNickname,
+          powertrainType: powertrain,
+        }));
+        setPowertrainSelected(powertrain);
+        setErrors(previous => ({
+          ...previous,
+          vin: undefined,
+          year: undefined,
+          make: undefined,
+          model: undefined,
+          powertrainType: undefined,
+        }));
+        lastLookedUpVin.current = vin;
+        setVinLookupState('success');
+        setVinLookupMessage('Vehicle details filled automatically.');
+        DataCollectionService.trackEvent('vin_lookup_completed', {
+          result: 'success',
+          cached: result.cached,
+          powertrain,
+        });
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setVinLookupState('error');
+        setVinLookupMessage(
+          error instanceof Error
+            ? `${error.message}. You can continue manually.`
+            : 'VIN lookup failed. You can continue manually.',
+        );
+        DataCollectionService.trackEvent('vin_lookup_completed', {
+          result: 'error',
+        });
+      }
+    }, 350);
+
+    return () => {
+      clearTimeout(lookupDelay);
+      controller.abort();
+    };
+  }, [form.vin]);
+
+  const setField = useCallback(
+    <K extends keyof VehicleDetails>(key: K, value: VehicleDetails[K]) => {
+      setForm(prev => ({ ...prev, [key]: value }));
+      setErrors(prev => ({ ...prev, [key]: undefined }));
+    },
+    [],
+  );
 
   const validateForm = useCallback((): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!form.nickname.trim()) {
-      newErrors.nickname = 'Vehicle nickname is required';
+    if (form.vin.trim() && !/^[A-HJ-NPR-Z0-9]{17}$/.test(form.vin.trim())) {
+      newErrors.vin = 'Enter a complete 17-character VIN';
     }
     if (!form.year.trim()) {
       newErrors.year = 'Year is required';
@@ -160,12 +331,18 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
     }
     if (!form.odometer.trim()) {
       newErrors.odometer = 'Odometer reading is required';
-    } else if (isNaN(Number(form.odometer.trim())) || Number(form.odometer.trim()) < 0) {
+    } else if (
+      isNaN(Number(form.odometer.trim())) ||
+      Number(form.odometer.trim()) < 0
+    ) {
       newErrors.odometer = 'Enter a valid odometer reading';
     }
     if (!form.askingPrice.trim()) {
       newErrors.askingPrice = 'Asking price is required';
-    } else if (isNaN(Number(form.askingPrice.trim())) || Number(form.askingPrice.trim()) < 0) {
+    } else if (
+      isNaN(Number(form.askingPrice.trim())) ||
+      Number(form.askingPrice.trim()) < 0
+    ) {
       newErrors.askingPrice = 'Enter a valid price';
     }
     if (!form.inspectionDate.trim()) {
@@ -205,6 +382,16 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
       } else {
         const newInspection = createNewInspection(vehicleData);
         await StorageService.saveInspection(newInspection);
+        DataCollectionService.trackEvent('inspection_started', {
+          powertrain: newInspection.vehicle.powertrainType,
+          section_count: newInspection.sections.length,
+          item_count: newInspection.sections.reduce(
+            (total, section) => total + section.items.length,
+            0,
+          ),
+          used_vin_lookup:
+            lastLookedUpVin.current === vehicleData.vin.trim().toUpperCase(),
+        });
         navigation.navigate('Checklist', {
           inspectionId: newInspection.id,
           sectionIndex: 0,
@@ -214,7 +401,14 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
     } finally {
       setSaving(false);
     }
-  }, [form, powertrainSelected, isEditing, inspectionId, navigation, validateForm]);
+  }, [
+    form,
+    powertrainSelected,
+    isEditing,
+    inspectionId,
+    navigation,
+    validateForm,
+  ]);
 
   const handleDateChange = useCallback(
     (_event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -234,7 +428,11 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
     ? (() => {
         const parts = form.inspectionDate.split('-');
         if (parts.length === 3) {
-          return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          return new Date(
+            Number(parts[0]),
+            Number(parts[1]) - 1,
+            Number(parts[2]),
+          );
         }
         return new Date();
       })()
@@ -274,21 +472,66 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
               : 'Enter the details for the vehicle you are inspecting.'}
           </Text>
 
+          {/* VIN first: entering it fills the vehicle fields automatically. */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>VIN</Text>
+            <TextInput
+              style={[styles.input, errors.vin ? styles.inputError : null]}
+              value={form.vin}
+              onChangeText={value =>
+                setField(
+                  'vin',
+                  value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, ''),
+                )
+              }
+              placeholder="Enter the 17-character VIN to autofill"
+              placeholderTextColor="#64748B"
+              autoCapitalize="characters"
+              returnKeyType="next"
+              autoCorrect={false}
+              maxLength={17}
+            />
+            {vinLookupState !== 'idle' ? (
+              <View style={styles.vinStatusRow}>
+                {vinLookupState === 'loading' ? (
+                  <ActivityIndicator size="small" color="#3B82F6" />
+                ) : null}
+                <Text
+                  style={[
+                    styles.vinStatusText,
+                    vinLookupState === 'success' && styles.vinStatusSuccess,
+                    vinLookupState === 'error' && styles.vinStatusError,
+                  ]}
+                >
+                  {vinLookupMessage}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.helperText}>
+                Optional. Lookup uses the secure Proveh server and requires
+                internet.
+              </Text>
+            )}
+            {errors.vin ? (
+              <Text style={styles.errorText}>{errors.vin}</Text>
+            ) : null}
+          </View>
+
           {/* Nickname */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>
-              Vehicle Nickname <Text style={styles.requiredText}>(required)</Text>
-            </Text>
+            <Text style={styles.fieldLabel}>Vehicle Nickname</Text>
             <TextInput
               style={[styles.input, errors.nickname ? styles.inputError : null]}
               value={form.nickname}
-              onChangeText={(v) => setField('nickname', v)}
+              onChangeText={v => setField('nickname', v)}
               placeholder='e.g. "2019 Camry - Blue"'
               placeholderTextColor="#64748B"
               returnKeyType="next"
               autoCorrect={false}
             />
-            {errors.nickname ? <Text style={styles.errorText}>{errors.nickname}</Text> : null}
+            {errors.nickname ? (
+              <Text style={styles.errorText}>{errors.nickname}</Text>
+            ) : null}
           </View>
 
           {/* Year */}
@@ -299,14 +542,16 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={[styles.input, errors.year ? styles.inputError : null]}
               value={form.year}
-              onChangeText={(v) => setField('year', v)}
+              onChangeText={v => setField('year', v)}
               placeholder="e.g. 2019"
               placeholderTextColor="#64748B"
               keyboardType="number-pad"
               maxLength={4}
               returnKeyType="next"
             />
-            {errors.year ? <Text style={styles.errorText}>{errors.year}</Text> : null}
+            {errors.year ? (
+              <Text style={styles.errorText}>{errors.year}</Text>
+            ) : null}
           </View>
 
           {/* Make */}
@@ -317,13 +562,15 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={[styles.input, errors.make ? styles.inputError : null]}
               value={form.make}
-              onChangeText={(v) => setField('make', v)}
+              onChangeText={v => setField('make', v)}
               placeholder="e.g. Toyota"
               placeholderTextColor="#64748B"
               returnKeyType="next"
               autoCorrect={false}
             />
-            {errors.make ? <Text style={styles.errorText}>{errors.make}</Text> : null}
+            {errors.make ? (
+              <Text style={styles.errorText}>{errors.make}</Text>
+            ) : null}
           </View>
 
           {/* Model */}
@@ -334,13 +581,15 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={[styles.input, errors.model ? styles.inputError : null]}
               value={form.model}
-              onChangeText={(v) => setField('model', v)}
+              onChangeText={v => setField('model', v)}
               placeholder="e.g. Camry"
               placeholderTextColor="#64748B"
               returnKeyType="next"
               autoCorrect={false}
             />
-            {errors.model ? <Text style={styles.errorText}>{errors.model}</Text> : null}
+            {errors.model ? (
+              <Text style={styles.errorText}>{errors.model}</Text>
+            ) : null}
           </View>
 
           {/* Trim (optional) */}
@@ -349,7 +598,7 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={styles.input}
               value={form.trim}
-              onChangeText={(v) => setField('trim', v)}
+              onChangeText={v => setField('trim', v)}
               placeholder="e.g. SE (optional)"
               placeholderTextColor="#64748B"
               returnKeyType="next"
@@ -360,18 +609,21 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
           {/* Odometer */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>
-              Odometer (miles) <Text style={styles.requiredText}>(required)</Text>
+              Odometer (miles){' '}
+              <Text style={styles.requiredText}>(required)</Text>
             </Text>
             <TextInput
               style={[styles.input, errors.odometer ? styles.inputError : null]}
               value={form.odometer}
-              onChangeText={(v) => setField('odometer', v)}
+              onChangeText={v => setField('odometer', v)}
               placeholder="e.g. 45000"
               placeholderTextColor="#64748B"
               keyboardType="number-pad"
               returnKeyType="next"
             />
-            {errors.odometer ? <Text style={styles.errorText}>{errors.odometer}</Text> : null}
+            {errors.odometer ? (
+              <Text style={styles.errorText}>{errors.odometer}</Text>
+            ) : null}
           </View>
 
           {/* Asking Price */}
@@ -384,37 +636,49 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
                 <Text style={styles.pricePrefixText}>$</Text>
               </View>
               <TextInput
-                style={[styles.input, styles.priceInput, errors.askingPrice ? styles.inputError : null]}
+                style={[
+                  styles.input,
+                  styles.priceInput,
+                  errors.askingPrice ? styles.inputError : null,
+                ]}
                 value={form.askingPrice}
-                onChangeText={(v) => setField('askingPrice', v)}
+                onChangeText={v => setField('askingPrice', v)}
                 placeholder="e.g. 12500"
                 placeholderTextColor="#64748B"
                 keyboardType="number-pad"
                 returnKeyType="next"
               />
             </View>
-            {errors.askingPrice ? <Text style={styles.errorText}>{errors.askingPrice}</Text> : null}
+            {errors.askingPrice ? (
+              <Text style={styles.errorText}>{errors.askingPrice}</Text>
+            ) : null}
           </View>
 
           {/* Powertrain Type */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>
-              Powertrain Type <Text style={styles.requiredText}>(required)</Text>
+              Powertrain Type{' '}
+              <Text style={styles.requiredText}>(required)</Text>
             </Text>
             <View style={styles.powertrainGrid}>
-              {POWERTRAIN_OPTIONS.map((option) => {
+              {POWERTRAIN_OPTIONS.map(option => {
                 const selected = powertrainSelected === option.value;
                 return (
                   <TouchableOpacity
                     key={option.value}
                     style={[
                       styles.powertrainTile,
-                      selected ? styles.powertrainTileSelected : styles.powertrainTileUnselected,
+                      selected
+                        ? styles.powertrainTileSelected
+                        : styles.powertrainTileUnselected,
                     ]}
                     onPress={() => {
                       setPowertrainSelected(option.value);
                       setField('powertrainType', option.value);
-                      setErrors((prev) => ({ ...prev, powertrainType: undefined }));
+                      setErrors(prev => ({
+                        ...prev,
+                        powertrainType: undefined,
+                      }));
                     }}
                     activeOpacity={0.75}
                   >
@@ -422,7 +686,9 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
                     <Text
                       style={[
                         styles.powertrainTileText,
-                        selected ? styles.powertrainTileTextSelected : styles.powertrainTileTextUnselected,
+                        selected
+                          ? styles.powertrainTileTextSelected
+                          : styles.powertrainTileTextUnselected,
                       ]}
                     >
                       {option.label}
@@ -431,21 +697,36 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
                 );
               })}
             </View>
-            {errors.powertrainType ? <Text style={styles.errorText}>{errors.powertrainType}</Text> : null}
+            {errors.powertrainType ? (
+              <Text style={styles.errorText}>{errors.powertrainType}</Text>
+            ) : null}
           </View>
 
           {/* Inspection Date */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>
-              Inspection Date <Text style={styles.requiredText}>(required)</Text>
+              Inspection Date{' '}
+              <Text style={styles.requiredText}>(required)</Text>
             </Text>
             <TouchableOpacity
-              style={[styles.input, styles.dateButton, errors.inspectionDate ? styles.inputError : null]}
+              style={[
+                styles.input,
+                styles.dateButton,
+                errors.inspectionDate ? styles.inputError : null,
+              ]}
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.8}
             >
-              <Text style={form.inspectionDate ? styles.dateButtonText : styles.dateButtonPlaceholder}>
-                {form.inspectionDate ? formatDate(form.inspectionDate) : 'Select date'}
+              <Text
+                style={
+                  form.inspectionDate
+                    ? styles.dateButtonText
+                    : styles.dateButtonPlaceholder
+                }
+              >
+                {form.inspectionDate
+                  ? formatDate(form.inspectionDate)
+                  : 'Select date'}
               </Text>
               <Text style={styles.dateChevron}>{'>'}</Text>
             </TouchableOpacity>
@@ -472,22 +753,28 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>Seller Type</Text>
             <View style={styles.sellerRow}>
-              {SELLER_OPTIONS.map((option) => {
+              {SELLER_OPTIONS.map(option => {
                 const selected = form.sellerType === option.value;
                 return (
                   <TouchableOpacity
                     key={option.value}
                     style={[
                       styles.sellerButton,
-                      selected ? styles.sellerButtonSelected : styles.sellerButtonUnselected,
+                      selected
+                        ? styles.sellerButtonSelected
+                        : styles.sellerButtonUnselected,
                     ]}
-                    onPress={() => setField('sellerType', selected ? '' : option.value)}
+                    onPress={() =>
+                      setField('sellerType', selected ? '' : option.value)
+                    }
                     activeOpacity={0.75}
                   >
                     <Text
                       style={[
                         styles.sellerButtonText,
-                        selected ? styles.sellerButtonTextSelected : styles.sellerButtonTextUnselected,
+                        selected
+                          ? styles.sellerButtonTextSelected
+                          : styles.sellerButtonTextUnselected,
                       ]}
                     >
                       {option.label}
@@ -504,7 +791,7 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={styles.input}
               value={form.sellerLabel}
-              onChangeText={(v) => setField('sellerLabel', v)}
+              onChangeText={v => setField('sellerLabel', v)}
               placeholder='e.g. "John Doe" or "ABC Motors"'
               placeholderTextColor="#64748B"
               returnKeyType="next"
@@ -518,27 +805,11 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={styles.input}
               value={form.exteriorColor}
-              onChangeText={(v) => setField('exteriorColor', v)}
+              onChangeText={v => setField('exteriorColor', v)}
               placeholder="e.g. Midnight Blue"
               placeholderTextColor="#64748B"
               returnKeyType="next"
               autoCorrect={false}
-            />
-          </View>
-
-          {/* VIN */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>VIN</Text>
-            <TextInput
-              style={styles.input}
-              value={form.vin}
-              onChangeText={(v) => setField('vin', v.toUpperCase())}
-              placeholder="Optional - enter VIN manually"
-              placeholderTextColor="#64748B"
-              autoCapitalize="characters"
-              returnKeyType="next"
-              autoCorrect={false}
-              maxLength={17}
             />
           </View>
 
@@ -548,7 +819,7 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={styles.input}
               value={form.listingUrl}
-              onChangeText={(v) => setField('listingUrl', v)}
+              onChangeText={v => setField('listingUrl', v)}
               placeholder="Optional - paste listing URL"
               placeholderTextColor="#64748B"
               keyboardType="url"
@@ -564,7 +835,7 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
             <TextInput
               style={[styles.input, styles.multilineInput]}
               value={form.generalNotes}
-              onChangeText={(v) => setField('generalNotes', v)}
+              onChangeText={v => setField('generalNotes', v)}
               placeholder="Any general notes about this vehicle or listing..."
               placeholderTextColor="#64748B"
               multiline
@@ -575,7 +846,10 @@ function VehicleDetailsScreen({ navigation, route }: Props): React.JSX.Element {
 
           {/* Save Button */}
           <TouchableOpacity
-            style={[styles.saveButton, saving ? styles.saveButtonDisabled : null]}
+            style={[
+              styles.saveButton,
+              saving ? styles.saveButtonDisabled : null,
+            ]}
             onPress={handleSave}
             activeOpacity={0.85}
             disabled={saving}
@@ -683,6 +957,30 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: 12,
     marginTop: 4,
+  },
+  helperText: {
+    color: '#64748B',
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 6,
+  },
+  vinStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginTop: 6,
+  },
+  vinStatusText: {
+    flex: 1,
+    color: '#94A3B8',
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  vinStatusSuccess: {
+    color: '#22C55E',
+  },
+  vinStatusError: {
+    color: '#F59E0B',
   },
   priceRow: {
     flexDirection: 'row',

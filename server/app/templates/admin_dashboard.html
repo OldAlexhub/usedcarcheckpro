@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proveh Server · Dashboard</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #11151b; color: #f1f5f9; }
+      header { display: flex; justify-content: space-between; align-items: center; padding: 18px max(24px, calc((100vw - 1080px) / 2)); border-bottom: 1px solid #303846; background: #1a2029; }
+      .brand { font-size: 18px; font-weight: 800; }
+      .brand span { color: #60a5fa; }
+      button { padding: 9px 13px; border: 1px solid #475569; border-radius: 9px; background: transparent; color: #cbd5e1; cursor: pointer; }
+      main { width: min(1080px, calc(100% - 40px)); margin: 42px auto; }
+      h1 { margin-bottom: 6px; }
+      .intro { color: #94a3b8; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin: 30px 0; }
+      .card { padding: 22px; border: 1px solid #374151; border-radius: 14px; background: #20262f; }
+      .number { font-size: 34px; font-weight: 800; color: #60a5fa; }
+      .label { margin-top: 4px; color: #94a3b8; }
+      .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 999px; background: #123a28; color: #86efac; font-weight: 700; font-size: 13px; }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+      a { color: #60a5fa; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span>Proveh</span> Server</div>
+      <form method="post" action="/admin/logout">
+        <input type="hidden" name="csrf" value="{{ csrf }}" />
+        <button type="submit">Sign out</button>
+      </form>
+    </header>
+    <main>
+      <div class="status"><span class="dot"></span>API operational</div>
+      <h1>Welcome, {{ admin.username }}</h1>
+      <p class="intro">A private overview of the services running at {{ public_base_url }}.</p>
+      <section class="grid" aria-label="Server statistics">
+        <article class="card"><div class="number">{{ vault_count }}</div><div class="label">Backup vaults</div></article>
+        <article class="card"><div class="number">{{ inspection_count }}</div><div class="label">Active inspections</div></article>
+        <article class="card"><div class="number">{{ dataset_count }}</div><div class="label">Curated dataset rows</div></article>
+        <article class="card"><div class="number">{{ vin_cache_count }}</div><div class="label">Cached VIN decodes</div></article>
+        <article class="card"><div class="number">{{ install_count }}</div><div class="label">Anonymous installs</div></article>
+        <article class="card"><div class="number">{{ event_count }}</div><div class="label">Product events</div></article>
+      </section>
+      <p><a href="/admin/datasets">Manage datasets and exports</a></p>
+      <p><a href="/docs">Open API documentation</a></p>
+    </main>
+  </body>
+</html>
+

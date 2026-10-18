@@ -1,7 +1,18 @@
 export type PowertrainType = 'gasoline' | 'diesel' | 'hybrid' | 'electric';
 export type SellerType = 'private' | 'dealer' | 'other';
-export type ChecklistStatus = 'good' | 'concern' | 'critical' | 'not_checked' | 'not_applicable';
-export type DecisionStatus = 'still_reviewing' | 'ask_mechanic' | 'request_info' | 'considering' | 'pass' | 'purchased';
+export type ChecklistStatus =
+  | 'good'
+  | 'concern'
+  | 'critical'
+  | 'not_checked'
+  | 'not_applicable';
+export type DecisionStatus =
+  | 'still_reviewing'
+  | 'ask_mechanic'
+  | 'request_info'
+  | 'considering'
+  | 'pass'
+  | 'purchased';
 
 export interface VehicleDetails {
   nickname: string;
@@ -47,6 +58,7 @@ export interface Inspection {
 
 export interface AppSettings {
   hasCompletedOnboarding: boolean;
+  hasAcceptedDataUse: boolean;
   lastInterstitialShownDate: string | null;
   interstitialShownThisSession: boolean;
 }
@@ -61,9 +73,12 @@ export type RootStackParamList = {
   Onboarding: undefined;
   MainTabs: undefined;
   VehicleDetails: { inspectionId?: string };
-  Checklist: { inspectionId: string; sectionIndex: number; totalSections: number };
+  Checklist: {
+    inspectionId: string;
+    sectionIndex: number;
+    totalSections: number;
+  };
   InspectionSummary: { inspectionId: string; isNew?: boolean };
-  CompareSelect: undefined;
   CompareResult: { inspectionIds: string[] };
   PrivacyPolicy: undefined;
 };

@@ -25,6 +25,7 @@ import { formatDate } from '../utils/dateUtils';
 import { generateComparisonPDF } from '../utils/pdfExport';
 import { shareFile } from '../utils/shareUtils';
 import BannerAdWrapper from '../components/BannerAdWrapper';
+import { DataCollectionService } from '../services/dataCollection';
 
 type Props = StackScreenProps<RootStackParamList, 'CompareResult'>;
 
@@ -92,9 +93,9 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
     useCallback(() => {
       setLoading(true);
       StorageService.getInspections()
-        .then((all) => {
+        .then(all => {
           const filtered = inspectionIds
-            .map((id) => all.find((i) => i.id === id))
+            .map(id => all.find(i => i.id === id))
             .filter((i): i is Inspection => i !== undefined);
           setInspections(filtered);
         })
@@ -108,6 +109,9 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
     try {
       const filePath = await generateComparisonPDF(inspections);
       await shareFile(filePath, 'Vehicle Comparison');
+      DataCollectionService.trackEvent('report_exported', {
+        format: 'comparison_pdf',
+      });
     } catch {
       Alert.alert(
         'Export Failed',
@@ -139,7 +143,7 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
 
   // Build vehicle display names
   const vehicleNames: Array<{ nickname: string; subtitle: string }> =
-    inspections.map((insp) => {
+    inspections.map(insp => {
       const v = insp.vehicle;
       const full = [v.year, v.make, v.model, v.trim].filter(Boolean).join(' ');
       return {
@@ -180,27 +184,21 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
   function criticalValue(insp: Inspection): React.ReactNode {
     const n = getCompletionStats(insp).critical;
     return (
-      <Text style={[styles.valueText, n > 0 && { color: '#EF4444' }]}>
-        {n}
-      </Text>
+      <Text style={[styles.valueText, n > 0 && { color: '#EF4444' }]}>{n}</Text>
     );
   }
 
   function concernValue(insp: Inspection): React.ReactNode {
     const n = getCompletionStats(insp).concern;
     return (
-      <Text style={[styles.valueText, n > 0 && { color: '#F59E0B' }]}>
-        {n}
-      </Text>
+      <Text style={[styles.valueText, n > 0 && { color: '#F59E0B' }]}>{n}</Text>
     );
   }
 
   function notCheckedValue(insp: Inspection): React.ReactNode {
     const n = getCompletionStats(insp).notChecked;
     return (
-      <Text style={[styles.valueText, n > 0 && { color: '#64748B' }]}>
-        {n}
-      </Text>
+      <Text style={[styles.valueText, n > 0 && { color: '#64748B' }]}>{n}</Text>
     );
   }
 
@@ -240,13 +238,15 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
     },
     {
       label: 'Year',
-      getValue: (insp) => (
-        <Text style={styles.valueText}>{insp.vehicle.year || 'Not entered'}</Text>
+      getValue: insp => (
+        <Text style={styles.valueText}>
+          {insp.vehicle.year || 'Not entered'}
+        </Text>
       ),
     },
     {
       label: 'Powertrain',
-      getValue: (insp) => (
+      getValue: insp => (
         <Text style={styles.valueText}>
           {getPowertrainLabel(insp.vehicle.powertrainType)}
         </Text>
@@ -254,7 +254,7 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
     },
     {
       label: 'Insp. Date',
-      getValue: (insp) => (
+      getValue: insp => (
         <Text style={styles.valueText}>
           {insp.vehicle.inspectionDate
             ? formatDate(insp.vehicle.inspectionDate)
@@ -290,77 +290,80 @@ function CompareResultScreen({ route }: Props): React.JSX.Element {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Vehicle header row */}
-      <View style={styles.vehicleHeaderRow}>
-        <View style={[styles.labelCell, { width: LABEL_COLUMN_WIDTH }]} />
-        {inspections.map((insp, idx) => (
-          <View
-            key={insp.id}
-            style={[
-              styles.vehicleHeaderCell,
-              idx < count - 1 && styles.valueCellBorder,
-            ]}
-          >
-            <Text style={styles.vehicleNickname} numberOfLines={2}>
-              {vehicleNames[idx].nickname}
-            </Text>
-            {vehicleNames[idx].subtitle ? (
-              <Text style={styles.vehicleSubtitle} numberOfLines={2}>
-                {vehicleNames[idx].subtitle}
-              </Text>
-            ) : null}
-          </View>
-        ))}
-      </View>
-
-      {/* Comparison table */}
-      <View style={styles.table}>
-        {rows.map((row, rowIdx) => {
-          const values: React.ReactNode[] = inspections.map((insp) =>
-            row.getValue(insp),
-          );
-
-          return (
-            <CompareRow
-              key={row.label}
-              label={row.label}
-              values={values}
-              isAlt={rowIdx % 2 === 1}
-              vehicleCount={count}
-            />
-          );
-        })}
-      </View>
-
-      {/* Export button */}
-      <TouchableOpacity
-        style={[styles.exportButton, exporting && styles.exportButtonDisabled]}
-        onPress={handleExport}
-        disabled={exporting}
-        activeOpacity={0.85}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        {exporting ? (
-          <ActivityIndicator size="small" color="#FFFFFF" />
-        ) : (
-          <MaterialIcons name="picture-as-pdf" size={20} color="#FFFFFF" />
-        )}
-        <Text style={styles.exportButtonText}>
-          {exporting ? 'Generating...' : 'Export Comparison PDF'}
-        </Text>
-      </TouchableOpacity>
+        {/* Vehicle header row */}
+        <View style={styles.vehicleHeaderRow}>
+          <View style={[styles.labelCell, { width: LABEL_COLUMN_WIDTH }]} />
+          {inspections.map((insp, idx) => (
+            <View
+              key={insp.id}
+              style={[
+                styles.vehicleHeaderCell,
+                idx < count - 1 && styles.valueCellBorder,
+              ]}
+            >
+              <Text style={styles.vehicleNickname} numberOfLines={2}>
+                {vehicleNames[idx].nickname}
+              </Text>
+              {vehicleNames[idx].subtitle ? (
+                <Text style={styles.vehicleSubtitle} numberOfLines={2}>
+                  {vehicleNames[idx].subtitle}
+                </Text>
+              ) : null}
+            </View>
+          ))}
+        </View>
 
-      {/* Disclaimer */}
-      <Text style={styles.disclaimer}>
-        Comparison is based on your recorded observations only. This tool does
-        not evaluate vehicle condition or recommend a purchase.
-      </Text>
-    </ScrollView>
-    <BannerAdWrapper />
+        {/* Comparison table */}
+        <View style={styles.table}>
+          {rows.map((row, rowIdx) => {
+            const values: React.ReactNode[] = inspections.map(insp =>
+              row.getValue(insp),
+            );
+
+            return (
+              <CompareRow
+                key={row.label}
+                label={row.label}
+                values={values}
+                isAlt={rowIdx % 2 === 1}
+                vehicleCount={count}
+              />
+            );
+          })}
+        </View>
+
+        {/* Export button */}
+        <TouchableOpacity
+          style={[
+            styles.exportButton,
+            exporting && styles.exportButtonDisabled,
+          ]}
+          onPress={handleExport}
+          disabled={exporting}
+          activeOpacity={0.85}
+        >
+          {exporting ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <MaterialIcons name="picture-as-pdf" size={20} color="#FFFFFF" />
+          )}
+          <Text style={styles.exportButtonText}>
+            {exporting ? 'Generating...' : 'Export Comparison PDF'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Disclaimer */}
+        <Text style={styles.disclaimer}>
+          Comparison is based on your recorded observations only. This tool does
+          not evaluate vehicle condition or recommend a purchase.
+        </Text>
+      </ScrollView>
+      <BannerAdWrapper />
     </SafeAreaView>
   );
 }

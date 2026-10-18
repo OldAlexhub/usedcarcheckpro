@@ -4,6 +4,7 @@ import { STORAGE_KEY, SCHEMA_VERSION } from '../config/constants';
 
 const DEFAULT_SETTINGS: AppSettings = {
   hasCompletedOnboarding: false,
+  hasAcceptedDataUse: false,
   lastInterstitialShownDate: null,
   interstitialShownThisSession: false,
 };
@@ -74,7 +75,7 @@ export const StorageService = {
   async getInspection(id: string): Promise<Inspection | null> {
     try {
       const schema = await loadSchema();
-      const found = schema.inspections.find((i) => i.id === id);
+      const found = schema.inspections.find(i => i.id === id);
       return found ?? null;
     } catch {
       return null;
@@ -84,7 +85,7 @@ export const StorageService = {
   async saveInspection(inspection: Inspection): Promise<void> {
     try {
       const schema = await loadSchema();
-      const idx = schema.inspections.findIndex((i) => i.id === inspection.id);
+      const idx = schema.inspections.findIndex(i => i.id === inspection.id);
       if (idx >= 0) {
         schema.inspections[idx] = inspection;
       } else {
@@ -99,7 +100,7 @@ export const StorageService = {
   async deleteInspection(id: string): Promise<void> {
     try {
       const schema = await loadSchema();
-      schema.inspections = schema.inspections.filter((i) => i.id !== id);
+      schema.inspections = schema.inspections.filter(i => i.id !== id);
       await saveSchema(schema);
     } catch {
       // Silently fail

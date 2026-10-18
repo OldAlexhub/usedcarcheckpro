@@ -47,7 +47,8 @@ function MainTabs(): React.JSX.Element {
         },
         tabBarActiveTintColor: '#3B82F6',
         tabBarInactiveTintColor: '#64748B',
-      }}>
+      }}
+    >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
@@ -106,7 +107,8 @@ function AppNavigator({ initialRoute }: AppNavigatorProps): React.JSX.Element {
           headerTintColor: HEADER_TINT,
           headerTitleStyle: HEADER_TITLE_STYLE,
           cardStyle: CARD_STYLE,
-        }}>
+        }}
+      >
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}
@@ -128,7 +130,9 @@ function AppNavigator({ initialRoute }: AppNavigatorProps): React.JSX.Element {
           options={({ route }) => ({
             title:
               route.params && typeof route.params.sectionIndex === 'number'
-                ? `Section ${route.params.sectionIndex + 1} of ${route.params.totalSections}`
+                ? `Section ${route.params.sectionIndex + 1} of ${
+                    route.params.totalSections
+                  }`
                 : 'Checklist',
           })}
         />
@@ -136,11 +140,6 @@ function AppNavigator({ initialRoute }: AppNavigatorProps): React.JSX.Element {
           name="InspectionSummary"
           component={InspectionSummaryScreen}
           options={{ title: 'Inspection Summary' }}
-        />
-        <Stack.Screen
-          name="CompareSelect"
-          component={CompareSelectScreen}
-          options={{ title: 'Compare Vehicles' }}
         />
         <Stack.Screen
           name="CompareResult"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { StorageService } from '../storage/storage';
+import { DataCollectionService } from '../services/dataCollection';
 
 type Props = StackScreenProps<RootStackParamList, 'Onboarding'>;
 
@@ -37,15 +38,22 @@ function SlideNotice(): React.JSX.Element {
     <View style={slideStyles.container}>
       <MaterialIcons name="info-outline" size={64} color="#F59E0B" />
       <Text style={slideStyles.slideTitle}>Important Notice</Text>
-      <ScrollView style={slideStyles.bodyScroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={slideStyles.bodyScroll}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={slideStyles.bodyText}>
-          Used Car Check Pro is an organization and observation tool to help you record your findings during a used car inspection.
+          Used Car Check Pro is an organization and observation tool to help you
+          record your findings during a used car inspection.
         </Text>
         <Text style={slideStyles.bodyText}>
-          This app does not replace a professional mechanical inspection, vehicle history report, title check, recall check, or independent safety evaluation.
+          This app does not replace a professional mechanical inspection,
+          vehicle history report, title check, recall check, or independent
+          safety evaluation.
         </Text>
         <Text style={slideStyles.bodyText}>
-          It does not certify any vehicle, confirm safety, detect hidden defects, determine value, or recommend a purchase.
+          It does not certify any vehicle, confirm safety, detect hidden
+          defects, determine value, or recommend a purchase.
         </Text>
         <Text style={slideStyles.bodyText}>
           Always consider a professional pre-purchase inspection before buying.
@@ -55,23 +63,35 @@ function SlideNotice(): React.JSX.Element {
   );
 }
 
-function SlideAds(): React.JSX.Element {
+function SlideDataUse(): React.JSX.Element {
   return (
     <View style={slideStyles.container}>
-      <MaterialIcons name="campaign" size={64} color="#3B82F6" />
-      <Text style={slideStyles.slideTitle}>Free App Supported by Ads</Text>
-      <ScrollView style={slideStyles.bodyScroll} showsVerticalScrollIndicator={false}>
+      <MaterialIcons name="dataset" size={64} color="#3B82F6" />
+      <Text style={slideStyles.slideTitle}>Data Use and Advertising</Text>
+      <ScrollView
+        style={slideStyles.bodyScroll}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={slideStyles.bodyText}>
-          Used Car Check Pro is free to use.
+          Old Alex Hub uses a limited, pseudonymous inspection-outcomes dataset
+          to analyze and improve this product and develop future features using
+          open-source technology. No LLMs are used.
         </Text>
         <Text style={slideStyles.bodyText}>
-          Some screens show ads provided by Google AdMob. Ads may be personalized based on your settings.
+          It includes vehicle year, make, model and trim; powertrain and seller
+          category; price and odometer ranges; checklist statuses; and your
+          decision. It never includes your VIN, nickname, listing URL, seller
+          name, written notes, precise location, or photos.
         </Text>
         <Text style={slideStyles.bodyText}>
-          Your inspection data stays on your device and is never shared with our servers.
+          Data is used only by Old Alex Hub for product analysis and feature
+          development. We do not sell it or share it for third-party marketing.
+          You can delete collected data from Settings.
         </Text>
         <Text style={slideStyles.bodyText}>
-          You can learn more in Settings under Privacy and Ads.
+          VIN lookup sends the VIN to Proveh Server and NHTSA. Google AdMob
+          separately processes advertising data under Google&apos;s policies. By
+          tapping Agree &amp; Get Started, you accept this data use.
         </Text>
       </ScrollView>
     </View>
@@ -81,9 +101,22 @@ function SlideAds(): React.JSX.Element {
 function OnboardingScreen({ navigation }: Props): React.JSX.Element {
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  useEffect(() => {
+    StorageService.getSettings().then(settings => {
+      if (settings.hasCompletedOnboarding && !settings.hasAcceptedDataUse) {
+        setCurrentSlide(SLIDE_COUNT - 1);
+      }
+    });
+  }, []);
+
   async function handleGetStarted(): Promise<void> {
     const settings = await StorageService.getSettings();
-    await StorageService.saveSettings({ ...settings, hasCompletedOnboarding: true });
+    await StorageService.saveSettings({
+      ...settings,
+      hasCompletedOnboarding: true,
+      hasAcceptedDataUse: true,
+    });
+    DataCollectionService.trackEvent('onboarding_completed');
     navigation.replace('MainTabs');
   }
 
@@ -106,7 +139,7 @@ function OnboardingScreen({ navigation }: Props): React.JSX.Element {
       case 1:
         return <SlideNotice />;
       case 2:
-        return <SlideAds />;
+        return <SlideDataUse />;
       default:
         return <SlideWelcome />;
     }
@@ -137,7 +170,7 @@ function OnboardingScreen({ navigation }: Props): React.JSX.Element {
           activeOpacity={0.85}
         >
           <Text style={styles.nextButtonText}>
-            {isLastSlide ? 'Get Started' : 'Next'}
+            {isLastSlide ? 'Agree & Get Started' : 'Next'}
           </Text>
         </TouchableOpacity>
 

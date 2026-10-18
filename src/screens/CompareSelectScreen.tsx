@@ -19,6 +19,7 @@ import EmptyState from '../components/EmptyState';
 import BannerAdWrapper from '../components/BannerAdWrapper';
 import { getCompletionStats, getDecisionLabel } from '../utils/inspectionUtils';
 import { formatDate } from '../utils/dateUtils';
+import { DataCollectionService } from '../services/dataCollection';
 
 const MAX_SELECTIONS = 3;
 
@@ -37,7 +38,7 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
       setLoading(true);
       setSelectedIds([]);
       StorageService.getInspections()
-        .then((all) => {
+        .then(all => {
           const sorted = [...all].sort(
             (a, b) =>
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -49,9 +50,9 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
   );
 
   function toggleSelect(id: string): void {
-    setSelectedIds((prev) => {
+    setSelectedIds(prev => {
       if (prev.includes(id)) {
-        return prev.filter((x) => x !== id);
+        return prev.filter(x => x !== id);
       }
       if (prev.length >= MAX_SELECTIONS) {
         return prev;
@@ -62,6 +63,9 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
 
   function handleCompare(): void {
     if (selectedIds.length >= 2) {
+      DataCollectionService.trackEvent('comparison_created', {
+        vehicle_count: selectedIds.length,
+      });
       navigation.navigate('CompareResult', { inspectionIds: selectedIds });
     }
   }
@@ -107,10 +111,7 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
           {/* Checkbox column */}
           <View style={styles.checkboxArea}>
             <View
-              style={[
-                styles.checkbox,
-                isSelected && styles.checkboxSelected,
-              ]}
+              style={[styles.checkbox, isSelected && styles.checkboxSelected]}
             >
               {isSelected ? (
                 <MaterialIcons name="check" size={14} color="#FFFFFF" />
@@ -128,7 +129,10 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
             </Text>
             {vehicleLine && vehicleLine !== displayName ? (
               <Text
-                style={[styles.cardVehicleLine, isDisabled && styles.textDisabled]}
+                style={[
+                  styles.cardVehicleLine,
+                  isDisabled && styles.textDisabled,
+                ]}
                 numberOfLines={1}
               >
                 {vehicleLine}
@@ -145,7 +149,9 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
             <View style={styles.cardStatsRow}>
               {stats.critical > 0 ? (
                 <View style={styles.statChip}>
-                  <View style={[styles.statDot, { backgroundColor: '#EF4444' }]} />
+                  <View
+                    style={[styles.statDot, { backgroundColor: '#EF4444' }]}
+                  />
                   <Text style={[styles.statChipText, { color: '#EF4444' }]}>
                     {stats.critical} Critical
                   </Text>
@@ -153,13 +159,17 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
               ) : null}
               {stats.concern > 0 ? (
                 <View style={styles.statChip}>
-                  <View style={[styles.statDot, { backgroundColor: '#F59E0B' }]} />
+                  <View
+                    style={[styles.statDot, { backgroundColor: '#F59E0B' }]}
+                  />
                   <Text style={[styles.statChipText, { color: '#F59E0B' }]}>
                     {stats.concern} Concern
                   </Text>
                 </View>
               ) : null}
-              <Text style={[styles.decisionText, isDisabled && styles.textDisabled]}>
+              <Text
+                style={[styles.decisionText, isDisabled && styles.textDisabled]}
+              >
                 {decisionLabel}
               </Text>
             </View>
@@ -175,7 +185,9 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
         {/* Custom header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Compare Vehicles</Text>
-          <Text style={styles.headerSub}>Select 2 or 3 vehicles to compare</Text>
+          <Text style={styles.headerSub}>
+            Select 2 or 3 vehicles to compare
+          </Text>
         </View>
 
         {/* Selection counter */}
@@ -200,7 +212,7 @@ function CompareSelectScreen({ navigation }: Props): React.JSX.Element {
         ) : (
           <FlatList
             data={inspections}
-            keyExtractor={(item) => item.id}
+            keyExtractor={item => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}

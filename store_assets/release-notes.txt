@@ -1,3 +1,3 @@
 Version 1.0.0 - Initial Release
 
-Used Car Check Pro is now available. This initial release includes the full guided inspection checklist with powertrain-specific sections for gasoline, diesel, hybrid, and electric vehicles. Save unlimited inspections, compare up to 3 vehicles side by side, export PDF reports, and work entirely offline. Free with ads. No account required.
+Used Car Check Pro includes a full guided checklist with gasoline, diesel, hybrid, and electric sections; automatic VIN lookup with manual fallback; local saved inspections; 3-vehicle comparison; and PDF/JSON exports. Core inspection tools remain offline-first. The updated disclosure explains the limited pseudonymous product dataset used by Old Alex Hub for analysis and future open-source features. No account required.

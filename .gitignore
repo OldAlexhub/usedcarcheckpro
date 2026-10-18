@@ -1,6 +1,10 @@
 # OSX
 #
 .DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*~
 
 # Xcode
 #
@@ -33,18 +37,35 @@ keystore.properties
 *.hprof
 .cxx/
 *.keystore
+*.jks
+*.p12
+*.pfx
 !debug.keystore
 .kotlin/
 
 # Release outputs
 releases/
+*.aab
+*.apk
+*.apks
+*.idsig
 build_errors.txt
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
 
 # node.js
 #
 node_modules/
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+.metro-cache/
+.eslintcache
 
 # fastlane
 #
@@ -70,6 +91,30 @@ yarn-error.log
 
 # testing
 /coverage
+
+# Python and Proveh server local state
+.venv/
+venv/
+env/
+*.egg-info/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+.coverage
+.coverage.*
+htmlcov/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+server/data/
+server/exports/
+server/uploads/
+server/backups/
 
 # Yarn
 .yarn/*
